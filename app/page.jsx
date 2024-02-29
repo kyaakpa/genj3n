@@ -4,8 +4,8 @@ import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 const Home = () => {
   const h1 = `Fashion & Lifestyle Illustration`;
   return (
-    <div className="flex justify-center">
-      <div className="flex w-[1200px]">
+    <div className="flex justify-center ">
+      <div className="flex w-[1200px] ">
         <div className=" text-center flex items-center flex-col gap-4 justify-center bg-red-200 w-[800px]">
           <h1 className="text-black font-semibold text-3xl w-[500px]">
             <TextGenerateEffect words={h1} />
