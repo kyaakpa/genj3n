@@ -53,7 +53,7 @@ const Navbar = () => {
       } z-10 transition-all duration-300 ease-in-out`}
     >
       <div
-        className={`w-full px-28 bg-[#F2F3F3] ${
+        className={`w-full px-28  ${
           scrolled ? "py-6" : "py-12"
         } transition-all duration-300 ease-in-out`}
       >

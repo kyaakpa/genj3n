@@ -4,7 +4,7 @@ import React from "react";
 const Footer = () => {
   return (
     <footer className="bottom-0">
-      <div className="bg-orange-100 flex justify-between p-20">
+      <div className="bg-[#E3DED5] flex justify-between p-20">
         <div>
           <p className="text-2xl">Want your kids to learn painting? </p>
           <button
@@ -31,7 +31,7 @@ const Footer = () => {
           </ul>
         </div>
       </div>
-      <div className="text-sm bg-orange-100 flex justify-between gap-4 px-20 py-4">
+      <div className="text-sm bg-[#E3DED5] flex justify-between gap-4 px-20 py-4">
         <div className="flex gap-3">
           <Link href="#">Facebook</Link>
           <Link href="#">Instagram</Link>

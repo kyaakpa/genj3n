@@ -2,7 +2,7 @@ import React from "react";
 
 const page = () => {
   return (
-    <div className="h-screen w-full bg-[#F2F3F3] pt-10 px-28">
+    <div className="h-auto w-full  pt-14 px-28">
       <div className="flex flex-col items-center w-full">
         <h1 className="text-4xl pb-12">Contact Me</h1>
         <p className="text-sm pb-16">
@@ -16,20 +16,21 @@ const page = () => {
           <input
             type="text"
             placeholder="Name"
-            className="bg-[#F2F3F3] border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
+            className="border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
           />
           <input
             type="text"
             placeholder="Email"
-            className=" bg-[#F2F3F3] border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
+            className="  border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
           />
           <textarea
             placeholder="Message"
-            className="bg-[#F2F3F3] border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
+            className="border border-gray-400 py-2 px-4 active:outline-none focus:outline-none"
+            rows={5}
           />
         </div>
         <button
-          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm"
+          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm mb-20"
           type="submit"
         >
           Submit
