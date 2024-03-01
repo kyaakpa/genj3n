@@ -2,26 +2,15 @@
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
 
 const Home = () => {
-  const h1 = `Fashion & Lifestyle Illustration`;
+  const h1 = `Fashion & Lifestyle Illustration. Hello! I'm Kiran, a fine art artist.`;
   return (
-    <div className="flex justify-center ">
-      <div className="flex w-[1200px] ">
-        <div className=" text-center flex items-center flex-col gap-4 justify-center bg-red-200 w-[800px]">
-          <h1 className="text-black font-semibold text-3xl w-[500px]">
-            <TextGenerateEffect words={h1} />
-          </h1>
-          <p>Hello! I'm Kiran, a fine art artist.</p>
-
-          <p className="">Scroll down to see art made by me :)</p>
-        </div>
-        <div>
-          <img
-            src="./cover.webp"
-            alt="krian smiling"
-            className="object-cover "
-          />
-        </div>
+    <div className="flex justify-center flex-col">
+      <div className="h-[25vh] bg-red-100 flex flex-col items-center justify-center">
+        <h1>
+          <TextGenerateEffect words={h1} />
+        </h1>
       </div>
+      <img src="./cover.webp" alt="krian smiling" className="object-cover " />
     </div>
   );
 };
