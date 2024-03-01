@@ -10,7 +10,11 @@ const Home = () => {
           <TextGenerateEffect words={h1} />
         </h1>
       </div>
-      <img src="./cover.webp" alt="krian smiling" className="object-cover " />
+      <img
+        src="./homecover.webp"
+        alt="krian smiling"
+        className="object-cover "
+      />
     </div>
   );
 };

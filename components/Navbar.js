@@ -48,7 +48,7 @@ const Navbar = () => {
 
   return (
     <div
-      className={`sticky top-0 ${
+      className={`sticky top-0 bg-white ${
         scrolled ? "shadow-sm" : ""
       } z-10 transition-all duration-300 ease-in-out`}
     >
@@ -58,7 +58,7 @@ const Navbar = () => {
         } transition-all duration-300 ease-in-out`}
       >
         <div className="flex flex-row justify-between items-center ">
-          <div>Kiran Paintings</div>
+          <img src="./logo.png" alt="kiran paintings logo" />
           <div className="flex flex-row space-x-16 text-sm items-center">
             {navbarItems.map((item) => (
               <a
