@@ -53,7 +53,7 @@ const Navbar = () => {
   return (
     <div
       className={`sticky top-0 bg-white ${
-        scrolled ? "shadow-sm" : ""
+        scrolled ? "shadow-md" : ""
       } z-10 transition-all duration-300 ease-in-out`}
     >
       <div
@@ -61,8 +61,14 @@ const Navbar = () => {
           scrolled ? "py-6" : "py-12"
         } transition-all duration-300 ease-in-out`}
       >
-        <div className="flex flex-row justify-between items-center ">
-          <img src="./logo.png" alt="kiran paintings logo" />
+        <div className="flex flex-row justify-between items-center">
+          <img
+            src="./logo.png"
+            alt="kiran paintings logo"
+            className={`w-32 transition-all duration-300 ease-in-out ${
+              scrolled ? "w-20" : ""
+            }`}
+          />
           <div className="flex flex-row space-x-16 text-sm items-center">
             {navbarItems.map((item) => (
               <a
