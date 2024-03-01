@@ -33,6 +33,10 @@ const Navbar = () => {
       href: "/gallery",
     },
     {
+      name: "SHOP",
+      href: "/shop",
+    },
+    {
       name: "CLASSES",
       href: "/classes",
     },
@@ -48,7 +52,7 @@ const Navbar = () => {
 
   return (
     <div
-      className={`sticky top-0 ${
+      className={`sticky top-0 bg-white ${
         scrolled ? "shadow-sm" : ""
       } z-10 transition-all duration-300 ease-in-out`}
     >
