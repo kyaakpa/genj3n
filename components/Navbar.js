@@ -74,7 +74,7 @@ const Navbar = () => {
               <a
                 href={item.href}
                 key={item.name}
-                className="hover:cursor-pointer hover:text-gray-400 transition-all duration-300 ease-in-out"
+                className="hover:cursor-pointer hover:text-[#c5a365] transition-all duration-300 ease-in-out"
               >
                 {item.name}
               </a>

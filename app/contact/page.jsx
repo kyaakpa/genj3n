@@ -7,7 +7,7 @@ const page = () => {
         <h1 className="text-4xl pb-12">Contact Me</h1>
         <p className="text-sm pb-16">
           Please fill the form below or email me at{" "}
-          <a href="mailto:" className="underline">
+          <a href="mailto:" className="underline text-[#c5a365]">
             kiranpaintings@gmail.com
           </a>
           {""} and I will get back to you as soon as possible.
@@ -30,7 +30,7 @@ const page = () => {
           />
         </div>
         <button
-          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm mb-20"
+          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm mb-20 "
           type="submit"
         >
           Submit
