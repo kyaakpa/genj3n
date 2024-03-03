@@ -54,7 +54,7 @@ const Navbar = () => {
     <div
       className={`sticky top-0 bg-white ${
         scrolled ? "shadow-md" : ""
-      } z-10 transition-all duration-300 ease-in-out`}
+      } z-40 transition-all duration-300 ease-in-out`}
     >
       <div
         className={`w-full px-28  ${

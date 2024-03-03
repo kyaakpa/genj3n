@@ -3,7 +3,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <footer className="bottom-0">
+    <footer className="bottom-0 mt-20 ">
       <div className="bg-[#E3DED5] flex justify-between p-20">
         <div>
           <p className="text-2xl">Want your kids to learn painting? </p>
