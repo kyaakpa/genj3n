@@ -30,7 +30,7 @@ const page = () => {
           />
         </div>
         <button
-          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm mb-20 "
+          className="bg-black text-white p-4 w-1/3 active:outline-none text-sm "
           type="submit"
         >
           Submit

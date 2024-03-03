@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { IoIosArrowRoundBack } from "react-icons/io";
+import { IoIosArrowRoundBack, IoIosArrowRoundForward } from "react-icons/io";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import {
   MdOutlineKeyboardArrowUp,
   MdOutlineKeyboardArrowDown,
 } from "react-icons/md";
+import PaintingCard from "@/components/ui/PaintingCard";
+import PaintingViewModal from "@/components/ui/PaintingViewModal";
+import Link from "next/link";
 const Page = () => {
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
   const [productInfo, setProductInfo] = useState({
@@ -20,6 +23,13 @@ const Page = () => {
   });
 
   const [productQuantity, setProductQuantity] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalItem, setModalItem] = useState(null);
+
+  const handleModal = (id) => {
+    setIsModalOpen(!isModalOpen);
+    setModalItem(id);
+  };
 
   const handleIncrement = () => {
     const currQuantity = productInfo.quantity;
@@ -130,7 +140,7 @@ const Page = () => {
       id: 6,
       name: "Painting 6",
       price: "$ 100",
-      staus: "Available",
+      status: "Available",
       image: "/test2.jpg",
       description:
         "Created using acrylic paint on canvas with a palette knife and brush.",
@@ -172,8 +182,6 @@ const Page = () => {
     },
   ];
 
-  console.log(productInfo);
-
   return (
     <div className="w-full px-28 h-full">
       <button className="flex items-center text-blue-500 pt-4">
@@ -183,7 +191,7 @@ const Page = () => {
         </a>
       </button>
 
-      <div className="flex flex-row items-start mb-8">
+      <div className="flex flex-row items-start">
         <div className="flex flex-col w-1/2 pr-4 text-left gap-4">
           <h1 className="text-4xl pt-4">{productInfo.name}</h1>
           <p className="text-2xl pt-2">{productInfo.price}</p>
@@ -248,12 +256,43 @@ const Page = () => {
             <p>Size: {productInfo.size}</p>
           </div>
         </div>
-        <div className="flex flex-col w-1/2 px-4 ">
-          <div className="flex w-full items-center justify-center px-4">
+        <div className="flex flex-col w-1/2  ">
+          <div className="flex w-full items-center justify-end">
             <img src={productInfo.image} alt="painting" className="" />
           </div>
         </div>
       </div>
+      <div className="flex flex-col w-full mt-12">
+        <div className="flex flex-row items-center justify-between w-full ">
+          <h1 className="text-2xl">Related Products</h1>
+          <Link
+            href="/shop"
+            className="flex items-center text-[#c5a365] text-sm"
+          >
+            <p>View All</p>
+            <IoIosArrowRoundForward size={28} className="ml-2" />
+          </Link>
+        </div>
+        <div className="flex flex-row gap-4 w-full items-center justify-between mt-8">
+          {imageItems
+            .filter((item) => item.id !== productInfo.id)
+            .sort(
+              (a, b) =>
+                Math.abs(productInfo.id - a.id) -
+                Math.abs(productInfo.id - b.id)
+            )
+            .slice(0, 3)
+            .sort((a, b) => a.id - b.id)
+            .map((item, index) => (
+              <PaintingCard item={item} key={index} handleModal={handleModal} />
+            ))}
+        </div>
+      </div>
+      <PaintingViewModal
+        isOpen={isModalOpen}
+        closeModal={() => handleModal(null)}
+        item={imageItems.find((item) => item.id === modalItem)}
+      />
     </div>
   );
 };
