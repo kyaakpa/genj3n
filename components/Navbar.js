@@ -1,10 +1,16 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import { Context } from "@/app/context/page";
+import React, { useState, useEffect, useContext } from "react";
 import { PiShoppingCartSimple } from "react-icons/pi";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+
+  const { cartItems } = useContext(Context);
+
+  const cartItemsLength = cartItems.reduce((acc, curr) => {
+    return acc + curr.quantity;
+  }, 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,7 +51,16 @@ const Navbar = () => {
       href: "/contact",
     },
     {
-      name: <PiShoppingCartSimple size={22} />,
+      name: (
+        <div className="flex flex-row items-center">
+          <PiShoppingCartSimple size={22} />
+          {cartItemsLength > 0 && (
+            <span className="text-xs bg-[#c5a365] text-white rounded-full h-5 w-5 flex items-center justify-center ml-1">
+              {cartItemsLength}
+            </span>
+          )}
+        </div>
+      ),
       href: "/cart",
     },
   ];

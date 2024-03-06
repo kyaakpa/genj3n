@@ -1,8 +1,40 @@
+import { Context } from "@/app/context/page";
+import { prints } from "@/public/dummyData";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  MdOutlineKeyboardArrowDown,
+  MdOutlineKeyboardArrowUp,
+} from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
 
 const PaintingViewModal = ({ isOpen, closeModal, item }) => {
+  const { handleAddToCart } = useContext(Context);
+  const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
+
+  const [productQuantity, setProductQuantity] = useState(1);
+
+  const handleIncrement = () => {
+    if (productQuantity < item.totalQuantity) {
+      setProductQuantity((prevState) => prevState + 1);
+    }
+  };
+
+  const handleDecrement = () => {
+    if (productQuantity > 1) {
+      setProductQuantity((prevState) => prevState - 1);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    if (value > item.totalQuantity) {
+      setProductQuantity(item.totalQuantity);
+    } else {
+      setProductQuantity(value);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".modal-content")) {
@@ -43,16 +75,75 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
           </div>
           <div className="flex flex-col h-full w-1/2 pl-20 gap-2">
             <p className="text-2xl font-light ">{item.name}</p>
-            <p className="text-xl font-light">{item.price}</p>
-            <button
-              className={`w-full font-light text-white p-4 mt-12 text-sm ${
-                item.status === "Sold"
-                  ? "bg-gray-500 opacity-50 cursor-not-allowed"
-                  : "bg-[#c5a365]"
-              }`}
-            >
-              {item.status === "Sold" ? "Sold Out" : "Add to Cart"}
-            </button>
+            <p className="text-xl font-light">$ {item.price}</p>
+
+            {item.status === "Available" && (
+              <>
+                <p className="text-sm pt-4">Quantity</p>
+                <div
+                  className="flex flex-row w-20 h-10 border border-gray-400 px-4 hover:cursor-pointer transition-al duration-500 ease-in-out"
+                  onMouseEnter={() => setIsHoveredAndActive(true)}
+                  onMouseLeave={() => setIsHoveredAndActive(false)}
+                  onClick={() => setIsHoveredAndActive(true)}
+                >
+                  <input
+                    className="w-2/3 h-full active:outline-none focus:outline-none text-gray-400"
+                    defaultValue={1}
+                    min={1}
+                    max={item.totalQuantity}
+                    value={productQuantity}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (/^\d*$/.test(inputValue)) {
+                        handleInputChange(e);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key === "-" || e.key === "e" || e.key === "E") {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {isHoveredAndActive && (
+                    <div className="flex flex-col items-center justify-center w-1/3 h-full">
+                      <p
+                        className="text-xs text-gray-400"
+                        onClick={handleIncrement}
+                      >
+                        <MdOutlineKeyboardArrowUp size={20} />
+                      </p>
+                      <p
+                        className="text-xs text-gray-400"
+                        onClick={handleDecrement}
+                      >
+                        <MdOutlineKeyboardArrowDown size={20} />
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-red-500">
+                  Only {item.totalQuantity} left in stock - order soon.{" "}
+                </p>
+              </>
+            )}
+
+            {item.status === "Sold" && (
+              <button className="w-full font-light text-white p-4 mt-12 text-sm  bg-gray-500 opacity-50 cursor-not-allowed">
+                Sold Out
+              </button>
+            )}
+            {item.status === "Available" && (
+              <button
+                className="w-full font-light text-white p-4 mt-12 text-sm bg-[#c5a365] "
+                onClick={() => {
+                  handleAddToCart(item, productQuantity);
+                  closeModal();
+                  setProductQuantity(1);
+                }}
+              >
+                Add to Cart
+              </button>
+            )}
             <Link href={`/shop/${modifiedName}`}>
               <p className="text-sm text-[#c5a365] underline font-light mt-2">
                 View Details

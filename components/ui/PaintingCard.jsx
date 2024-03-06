@@ -51,7 +51,7 @@ const PaintingCard = ({ item, handleModal }) => {
         {item.status === "Sold" ? (
           <p className="text-[#c5a365] font-semibold">Out of Stock</p>
         ) : (
-          <p className="text-gray-600 font-semibold">{item.price}</p>
+          <p className="text-gray-600 font-semibold">$ {item.price}</p>
         )}
       </div>
     </div>
