@@ -36,10 +36,10 @@ function GlobalState({ children }) {
       return prevState
         .map((cartItem) => {
           if (cartItem.id === id) {
-            if (cartItem.quantity > 1) {
-              return { ...cartItem, quantity: cartItem.quantity - 1 };
-            } else {
+            if (cartItem.quantity === 1) {
               return null;
+            } else {
+              return { ...cartItem, quantity: cartItem.quantity - 1 };
             }
           }
           return cartItem;
@@ -53,10 +53,10 @@ function GlobalState({ children }) {
         cartItems
           .map((cartItem) => {
             if (cartItem.id === id) {
-              if (cartItem.quantity > 1) {
-                return { ...cartItem, quantity: cartItem.quantity - 1 };
-              } else {
+              if (cartItem.quantity === 1) {
                 return null;
+              } else {
+                return { ...cartItem, quantity: cartItem.quantity - 1 };
               }
             }
             return cartItem;

@@ -33,6 +33,8 @@ const Page = () => {
   const handleDecrement = (index) => {
     if (cartItems[index].quantity > 1) {
       handleRemoveFromCart(cartItems[index].id);
+    } else if (cartItems[index].quantity === 1) {
+      handleDeleteFromCart(cartItems[index].id);
     }
   };
 
@@ -77,7 +79,7 @@ const Page = () => {
                   <p className="pl-4 text-xs">{item.size}</p>
                 </div>
               </div>
-              <p className="w-1/6 text-center">{item.price}</p>
+              <p className="w-1/6 text-center">$ {item.price}</p>
               <div className="flex flex-col gap-2 w-1/6 px-2 text-center text-gray-600">
                 <div className="flex flex-row p-3 border border-gray-600 justify-between items-center">
                   <FiMinus
