@@ -35,7 +35,7 @@ const PaintingsList = () => {
         <div className="flex justify-between w-full px-8 pb-12 ">
           <h1 className="text-2xl font-semibold">Available Paintings</h1>
 
-          <div className="flex items-center gap-2 cursor-pointer bg-blue-600 text-white p-2 px-4 rounded-md">
+          <div className="flex items-center gap-2 cursor-pointer bg-blue-600 text-white p-2 px-4 rounded-md hover:opacity-80 transition-all duration-300 ease-in-out">
             <FaPlus />
             <button
               className="active:outline-none text-sm"
