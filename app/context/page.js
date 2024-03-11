@@ -5,9 +5,13 @@ import { createContext, useEffect, useState } from "react";
 export const Context = createContext(null);
 
 function GlobalState({ children }) {
-  const [cartItems, setCartItems] = useState(
-    JSON.parse(localStorage.getItem("cartItems")) || []
-  );
+  const [cartItems, setCartItems] = useState(() => {
+    if (typeof localStorage !== "undefined") {
+      return JSON.parse(localStorage.getItem("cartItems")) || [];
+    } else {
+      return [];
+    }
+  });
 
   const handleAddToCart = (item, quantity = 1) => {
     setCartItems((prevState) => {
