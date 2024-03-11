@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IoIosArrowRoundBack, IoIosArrowRoundForward } from "react-icons/io";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import {
@@ -10,7 +10,11 @@ import {
 import PaintingCard from "@/components/ui/PaintingCard";
 import PaintingViewModal from "@/components/ui/PaintingViewModal";
 import Link from "next/link";
+import { prints } from "@/public/dummyData";
+import { Context } from "@/app/context/page";
+
 const Page = () => {
+  const { handleAddToCart } = useContext(Context);
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
   const [productInfo, setProductInfo] = useState({
     name: "",
@@ -20,6 +24,7 @@ const Page = () => {
     description: "",
     size: "",
     quantity: 0,
+    totalQuantity: 0,
   });
 
   const [productQuantity, setProductQuantity] = useState(1);
@@ -32,28 +37,21 @@ const Page = () => {
   };
 
   const handleIncrement = () => {
-    const currQuantity = productInfo.quantity;
-    setProductQuantity((prevState) => {
-      if (prevState < currQuantity) {
-        return prevState + 1;
-      }
-      return prevState;
-    });
+    if (productQuantity < productInfo.totalQuantity) {
+      setProductQuantity((prevState) => prevState + 1);
+    }
   };
 
   const handleDecrement = () => {
-    setProductQuantity((prevState) => {
-      if (prevState > 1) {
-        return prevState - 1;
-      }
-      return prevState;
-    });
+    if (productQuantity > 1) {
+      setProductQuantity((prevState) => prevState - 1);
+    }
   };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    if (value > productInfo.quantity) {
-      setProductQuantity(productInfo.quantity);
+    if (value > productInfo.totalQuantity) {
+      setProductQuantity(productInfo.totalQuantity);
     } else {
       setProductQuantity(value);
     }
@@ -71,7 +69,7 @@ const Page = () => {
     }
 
     if (decodedText) {
-      const product = imageItems.find(
+      const product = prints.find(
         (item) => item.name.replace(/ /g, "").toLowerCase() === decodedText
       );
       if (product) {
@@ -79,108 +77,6 @@ const Page = () => {
       }
     }
   }, []);
-
-  const imageItems = [
-    {
-      id: 1,
-      name: "Summer Stripes n°6 - original",
-      price: "$ 100",
-      status: "Available",
-      image: "/test.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: "Painting 2",
-      price: "$ 120",
-      status: "Sold",
-      image: "/test2.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 0,
-    },
-    {
-      id: 3,
-      name: "Painting 3",
-      price: "$ 100",
-      status: "Available",
-      image: "/test3.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 2,
-    },
-    {
-      id: 4,
-      name: "Painting 4",
-      price: "$ 120",
-      status: "Available",
-      image: "/test2.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 1,
-    },
-    {
-      id: 5,
-      name: "Painting 5",
-      price: "$ 100",
-      status: "Available",
-      image: "/test.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 2,
-    },
-    {
-      id: 6,
-      name: "Painting 6",
-      price: "$ 100",
-      status: "Available",
-      image: "/test2.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 4,
-    },
-    {
-      id: 7,
-      name: "Painting 7",
-      price: "$ 120",
-      status: "Sold",
-      image: "/test3.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 0,
-    },
-    {
-      id: 8,
-      name: "Painting 8",
-      price: "$ 120",
-      status: "Sold",
-      image: "/test3.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 0,
-    },
-    {
-      id: 9,
-      name: "Painting 9",
-      price: "$ 100",
-      status: "Available",
-      image: "/test.jpg",
-      description:
-        "Created using acrylic paint on canvas with a palette knife and brush.",
-      size: "30x40cm",
-      quantity: 1,
-    },
-  ];
 
   return (
     <div className="w-full px-28 h-full">
@@ -194,7 +90,7 @@ const Page = () => {
       <div className="flex flex-row items-start">
         <div className="flex flex-col w-1/2 pr-4 text-left gap-4">
           <h1 className="text-4xl pt-4">{productInfo.name}</h1>
-          <p className="text-2xl pt-2">{productInfo.price}</p>
+          <p className="text-2xl pt-2">$ {productInfo.price}</p>
           {productInfo.status === "Available" && (
             <div className="flex flex-col gap-2">
               <p className="text-sm pt-2">Quantity</p>
@@ -208,9 +104,19 @@ const Page = () => {
                   className="w-2/3 h-full active:outline-none focus:outline-none text-gray-400"
                   defaultValue={1}
                   min={1}
-                  max={productInfo.quantity}
+                  max={productInfo.totalQuantity}
                   value={productQuantity}
-                  onChange={handleInputChange}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (/^\d*$/.test(inputValue)) {
+                      handleInputChange(e);
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === "-" || e.key === "e" || e.key === "E") {
+                      e.preventDefault();
+                    }
+                  }}
                 />
                 {isHoveredAndActive && (
                   <div className="flex flex-col items-center justify-center w-1/3 h-full">
@@ -230,21 +136,23 @@ const Page = () => {
                 )}
               </div>
               <p className="text-xs text-red-500">
-                Only {productInfo.quantity} left in stock - order soon.{" "}
+                Only {productInfo.totalQuantity} left in stock - order soon.{" "}
               </p>
             </div>
           )}
-          <button
-            className={`w-full font-light text-white p-4 mt-6 text-sm ${
-              productInfo.status === "Sold"
-                ? "bg-gray-500 opacity-50 cursor-not-allowed"
-                : "bg-[#c5a365] hover:bg-[#c9ae7c]"
-            }`}
-          >
-            {productInfo.status === "Sold"
-              ? "Out of Stock"
-              : `Add to Cart -  ${productInfo.price}`}
-          </button>
+          {productInfo.status === "Sold" && (
+            <button className="w-full font-light text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
+              Out of Stock
+            </button>
+          )}
+          {productInfo.status === "Available" && (
+            <button
+              className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
+              onClick={() => handleAddToCart(productInfo, productQuantity)}
+            >
+              Add to Cart - {productInfo.price}
+            </button>
+          )}
           {productInfo.status === "Available" && (
             <button className="w-full font-light text-white p-4 text-sm bg-black hover:bg-[#424141]">
               Checkout
@@ -274,7 +182,7 @@ const Page = () => {
           </Link>
         </div>
         <div className="flex flex-row gap-4 w-full items-center justify-between mt-8">
-          {imageItems
+          {prints
             .filter((item) => item.id !== productInfo.id)
             .sort(
               (a, b) =>
@@ -291,7 +199,7 @@ const Page = () => {
       <PaintingViewModal
         isOpen={isModalOpen}
         closeModal={() => handleModal(null)}
-        item={imageItems.find((item) => item.id === modalItem)}
+        item={prints.find((item) => item.id === modalItem)}
       />
     </div>
   );
