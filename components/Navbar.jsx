@@ -1,16 +1,12 @@
 "use client";
-import { Context } from "@/app/context/page";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { PiShoppingCartSimple } from "react-icons/pi";
+import Hamburger from "hamburger-react";
+import Link from "next/link";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-
-  const { cartItems } = useContext(Context);
-
-  const cartItemsLength = cartItems.reduce((acc, curr) => {
-    return acc + curr.quantity;
-  }, 0);
+  const [isOpen, setOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -51,16 +47,7 @@ const Navbar = () => {
       href: "/contact",
     },
     {
-      name: (
-        <div className="flex flex-row items-center">
-          <PiShoppingCartSimple size={22} />
-          {cartItemsLength > 0 && (
-            <span className="text-xs bg-[#c5a365] text-white rounded-full h-5 w-5 flex items-center justify-center ml-1">
-              {cartItemsLength}
-            </span>
-          )}
-        </div>
-      ),
+      name: <PiShoppingCartSimple size={22} />,
       href: "/cart",
     },
   ];
@@ -72,11 +59,11 @@ const Navbar = () => {
       } z-40 transition-all duration-300 ease-in-out`}
     >
       <div
-        className={`w-full px-28  ${
+        className={`w-full lg:px-28 px-12  ${
           scrolled ? "py-6" : "py-12"
         } transition-all duration-300 ease-in-out`}
       >
-        <div className="flex flex-row justify-between items-center">
+        <div className="flex flex-row  justify-between items-center ">
           <img
             src="./logo.png"
             alt="kiran paintings logo"
@@ -84,17 +71,42 @@ const Navbar = () => {
               scrolled ? "w-20" : ""
             }`}
           />
-          <div className="flex flex-row space-x-16 text-sm items-center">
+          <button className="lg:hidden self-end">
+            <Hamburger size={32} toggled={isOpen} toggle={setOpen} />
+          </button>
+
+          <div className="hidden lg:flex flex-row space-x-16 text-sm items-center">
             {navbarItems.map((item) => (
-              <a
+              <Link
                 href={item.href}
                 key={item.name}
                 className="hover:cursor-pointer hover:text-[#c5a365] transition-all duration-300 ease-in-out"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </div>
+        </div>
+        <div
+          className="flex text-right justify-end"
+          style={{
+            maxHeight: isOpen ? "300px" : "0",
+            overflow: "hidden",
+            transition: "max-height 0.5s ease-in-out",
+          }}
+        >
+          <ul className="mt-16">
+            {navbarItems.map((item) => (
+              <li key={item.name} className="p-2">
+                <Link
+                  href={item.href}
+                  className="hover:cursor-pointer hover:text-[#c5a365] transition-all duration-300 ease-in-out"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
