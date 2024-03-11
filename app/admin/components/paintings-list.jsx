@@ -1,19 +1,33 @@
 "use client";
 
-import PaintingViewModal from "@/components/ui/PaintingViewModal";
 import { prints } from "@/public/dummyData";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import AdminPaintingCard from "./AdminPaintingCard";
+import { useRouter } from "next/navigation";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/app/firebase/config";
 
 const PaintingsList = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalItem, setModalItem] = useState(null);
+  const [paintings, setPaintings] = useState([]);
+  const router = useRouter();
 
-  const handleModal = (id) => {
-    setIsModalOpen(!isModalOpen);
-    setModalItem(id);
+  const getPaintings = async () => {
+    const querySnapshot = await getDocs(collection(db, "paintings"));
+    const paintings = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setPaintings(paintings);
+
+    querySnapshot.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
+    });
   };
+
+  useEffect(() => {
+    getPaintings();
+  }, []);
 
   return (
     <div className="h-auto w-full pt-6">
@@ -23,18 +37,17 @@ const PaintingsList = () => {
 
           <div className="flex items-center gap-2 cursor-pointer bg-blue-600 text-white p-2 px-4 rounded-md">
             <FaPlus />
-            <button className="active:outline-none text-sm">
+            <button
+              className="active:outline-none text-sm"
+              onClick={() => router.push("/admin/paintings/new")}
+            >
               Add New Painting
             </button>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-y-4 gap-x-12 px-8 ">
-          {prints.map((item) => (
-            <AdminPaintingCard
-              item={item}
-              key={item.id}
-              handleModal={handleModal}
-            />
+          {paintings.map((item) => (
+            <AdminPaintingCard item={item} key={item.id} />
           ))}
         </div>
       </div>

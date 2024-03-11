@@ -2,7 +2,8 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
 
-const AdminPaintingCard = ({ item, handleModal }) => {
+const AdminPaintingCard = ({ item }) => {
+  console.log("Item:", item);
   const [isHovered, setIsHovered] = useState(false);
 
   const router = useRouter();
@@ -11,18 +12,17 @@ const AdminPaintingCard = ({ item, handleModal }) => {
     setIsHovered(!isHovered);
   };
 
+  const handleEditClick = () => {
+    router.push(`/admin/paintings/${item.id}`);
+  };
+
   return (
     <div
       key={item.id}
       className="relative h-[350px] w-[350px]  hover:cursor-pointer"
       onMouseEnter={() => handleHover(item.id)}
       onMouseLeave={() => handleHover(null)}
-      onClick={() => {
-        const modifiedName = encodeURIComponent(
-          item.name.replace(/\s+/g, "").toLowerCase()
-        );
-        router.push(`/admin/paintings/${modifiedName}`);
-      }}
+      onClick={handleEditClick}
     >
       <div
         className={`absolute top-0 right-0 py-2 px-4 z-20 text-sm bg-red-600 text-white transition-opacity duration-200 ${
@@ -33,7 +33,7 @@ const AdminPaintingCard = ({ item, handleModal }) => {
       </div>
       <div className="h-[250px] w-full bg-blue-200 relative">
         <img
-          src={item.image}
+          src={item.imageUrl}
           alt={item.name}
           className="h-full w-full object-cover"
         />
