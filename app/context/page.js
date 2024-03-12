@@ -12,32 +12,43 @@ function GlobalState({ children }) {
     }
   });
 
-  const handleAddToCart = (item, quantity = 1) => {
+  const handleAddToCart = (item, ordered_quantity = 1) => {
     setCartItems((prevState) => {
       const isItemInCart = prevState.find(
         (cartItem) => cartItem.id === item.id
       );
+
+      let updatedCartItems;
+
       if (isItemInCart) {
-        const updatedCartItems = prevState.map((cartItem) =>
+        updatedCartItems = prevState.map((cartItem) =>
           cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + quantity }
+            ? {
+                ...cartItem,
+                ordered_quantity: Math.min(
+                  cartItem.ordered_quantity + ordered_quantity,
+                  item.totalQuantity
+                ),
+              }
             : cartItem
         );
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(
-            "cartItems",
-            JSON.stringify(updatedCartItems)
-          );
-        }
-        return updatedCartItems;
+      } else {
+        updatedCartItems = [
+          ...prevState,
+          {
+            ...item,
+            ordered_quantity: Math.min(ordered_quantity, item.totalQuantity),
+          },
+        ];
       }
-      const updatedCartItems = [...prevState, { ...item, quantity }];
+
       if (typeof window !== "undefined") {
         window.localStorage.setItem(
           "cartItems",
           JSON.stringify(updatedCartItems)
         );
       }
+
       return updatedCartItems;
     });
   };
@@ -47,10 +58,13 @@ function GlobalState({ children }) {
       const updatedCartItems = prevState
         .map((cartItem) => {
           if (cartItem.id === id) {
-            if (cartItem.quantity === 1) {
+            if (cartItem.ordered_quantity === 1) {
               return null;
             } else {
-              return { ...cartItem, quantity: cartItem.quantity - 1 };
+              return {
+                ...cartItem,
+                ordered_quantity: cartItem.ordered_quantity - 1,
+              };
             }
           }
           return cartItem;

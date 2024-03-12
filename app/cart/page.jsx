@@ -31,9 +31,9 @@ const Page = () => {
   };
 
   const handleDecrement = (index) => {
-    if (cartItems[index].quantity > 1) {
+    if (cartItems[index].ordered_quantity > 1) {
       handleRemoveFromCart(cartItems[index].id);
-    } else if (cartItems[index].quantity === 1) {
+    } else if (cartItems[index].ordered_quantity === 1) {
       handleDeleteFromCart(cartItems[index].id);
     }
   };
@@ -41,7 +41,7 @@ const Page = () => {
   console.log(cartItems);
 
   const calculateItemTotal = (item) => {
-    return item.price * item.quantity;
+    return Number(item.price) * item.ordered_quantity;
   };
 
   const calculateSubtotal = () => {
@@ -70,7 +70,7 @@ const Page = () => {
             >
               <div className="w-3/6 flex flex-row items-start">
                 <img
-                  src={item.image}
+                  src={item.imageUrl}
                   alt={item.name}
                   className="h-20 w-20 object-cover"
                 />
@@ -79,7 +79,7 @@ const Page = () => {
                   <p className="pl-4 text-xs">{item.size}</p>
                 </div>
               </div>
-              <p className="w-1/6 text-center">$ {item.price}</p>
+              <p className="w-1/6 text-center">$ {Number(item.price)}</p>
               <div className="flex flex-col gap-2 w-1/6 px-2 text-center text-gray-600">
                 <div className="flex flex-row p-3 border border-gray-600 justify-between items-center">
                   <FiMinus
@@ -90,7 +90,7 @@ const Page = () => {
                     className="w-1/2 active:outline-none focus:outline-none text-black text-center"
                     min={1}
                     max={item.totalQuantity}
-                    value={cartItems[index].quantity}
+                    value={cartItems[index].ordered_quantity}
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (/^\d*$/.test(inputValue)) {

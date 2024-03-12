@@ -33,7 +33,7 @@ const AdminPaintingCard = ({ item }) => {
         Edit
       </div>
       <div className="h-[250px] w-full bg-blue-200 relative">
-        <Image
+        <img
           src={item.imageUrl}
           alt={item.name}
           className="h-full w-full object-cover"
