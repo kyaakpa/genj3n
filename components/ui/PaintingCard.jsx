@@ -17,10 +17,7 @@ const PaintingCard = ({ item, handleModal }) => {
       onMouseEnter={() => handleHover(item.id)}
       onMouseLeave={() => handleHover(null)}
       onClick={() => {
-        const modifiedName = encodeURIComponent(
-          item.name.replace(/\s+/g, "").toLowerCase()
-        );
-        router.push(`/shop/${modifiedName}`);
+        router.push(`/shop/${item.id}`);
       }}
     >
       {item.status === "Sold" && (
@@ -30,7 +27,7 @@ const PaintingCard = ({ item, handleModal }) => {
       )}
       <div className="h-[500px] w-full bg-blue-200 relative">
         <img
-          src={item.image}
+          src={item.imageUrl}
           alt={item.name}
           className="h-full w-full object-cover"
         />

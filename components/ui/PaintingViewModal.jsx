@@ -7,12 +7,43 @@ import {
   MdOutlineKeyboardArrowUp,
 } from "react-icons/md";
 import { RxCross1 } from "react-icons/rx";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PaintingViewModal = ({ isOpen, closeModal, item }) => {
   const { handleAddToCart } = useContext(Context);
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
 
   const [productQuantity, setProductQuantity] = useState(1);
+  const [orderedQuantity, setOrderedQuantity] = useState(0);
+
+  useEffect(() => {
+    if (item && item.id) {
+      const cartItems = JSON.parse(localStorage.getItem("cartItems"));
+      const orderedItem = cartItems
+        ? cartItems.find((cartItem) => cartItem.id === item.id)
+        : null;
+      setOrderedQuantity(orderedItem ? orderedItem.ordered_quantity : 0);
+    }
+  }, [item]);
+
+  const handleClickAddToCart = () => {
+    if (orderedQuantity >= item.totalQuantity) {
+      toast.error("You have reached the maximum quantity for this item.", {
+        position: "top-right",
+        autoClose: 3000,
+        closeOnClick: true,
+        style: {
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+      });
+    } else {
+      handleAddToCart(item, productQuantity);
+      closeModal();
+      setProductQuantity(1);
+    }
+  };
 
   const handleIncrement = () => {
     if (productQuantity < item.totalQuantity) {
@@ -68,7 +99,7 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
         <div className="flex flex-row w-full h-full pb-4 ">
           <div className="h-full w-1/2">
             <img
-              src={item.image}
+              src={item.imageUrl}
               alt={item.name}
               className="h-full w-full object-cover"
             />
@@ -77,7 +108,7 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
             <p className="text-2xl font-light ">{item.name}</p>
             <p className="text-xl font-light">$ {item.price}</p>
 
-            {item.status === "Available" && (
+            {item.totalQuantity > 0 && (
               <>
                 <p className="text-sm pt-4">Quantity</p>
                 <div
@@ -127,24 +158,20 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
               </>
             )}
 
-            {item.status === "Sold" && (
-              <button className="w-full font-light text-white p-4 mt-12 text-sm  bg-gray-500 opacity-50 cursor-not-allowed">
+            {item.totalQuantity <= 0 && (
+              <button className="w-full font-light text-white p-4 mt-6 text-sm  bg-gray-500 opacity-50 cursor-not-allowed">
                 Sold Out
               </button>
             )}
-            {item.status === "Available" && (
+            {item.totalQuantity > 0 && (
               <button
-                className="w-full font-light text-white p-4 mt-12 text-sm bg-[#c5a365] "
-                onClick={() => {
-                  handleAddToCart(item, productQuantity);
-                  closeModal();
-                  setProductQuantity(1);
-                }}
+                className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] "
+                onClick={handleClickAddToCart}
               >
                 Add to Cart
               </button>
             )}
-            <Link href={`/shop/${modifiedName}`}>
+            <Link href={`/shop/${item.id}`}>
               <p className="text-sm text-[#c5a365] underline font-light mt-2">
                 View Details
               </p>

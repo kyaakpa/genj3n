@@ -5,6 +5,7 @@ import "./globals.css";
 import GlobalState from "./context/page";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import { ToastContainer } from "react-toastify";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
         <GlobalState>
           {!isAdminPath && <Navbar />}
           {children}
+          <ToastContainer />
           {!isAdminPath && <Footer />}
         </GlobalState>
       </body>

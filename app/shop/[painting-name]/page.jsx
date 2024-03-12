@@ -2,7 +2,6 @@
 
 import { useContext, useEffect, useState } from "react";
 import { IoIosArrowRoundBack, IoIosArrowRoundForward } from "react-icons/io";
-import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import {
   MdOutlineKeyboardArrowUp,
   MdOutlineKeyboardArrowDown,
@@ -10,34 +9,28 @@ import {
 import PaintingCard from "@/components/ui/PaintingCard";
 import PaintingViewModal from "@/components/ui/PaintingViewModal";
 import Link from "next/link";
-import { prints } from "@/public/dummyData";
 import { Context } from "@/app/context/page";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { db } from "@/app/firebase/config";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const { handleAddToCart } = useContext(Context);
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
-  const [productInfo, setProductInfo] = useState({
-    name: "",
-    price: "",
-    status: "",
-    image: "",
-    description: "",
-    size: "",
-    quantity: 0,
-    totalQuantity: 0,
-  });
-
+  const [painting, setPainting] = useState();
+  const [paintings, setPaintings] = useState([]);
   const [productQuantity, setProductQuantity] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalItem, setModalItem] = useState(null);
-
+  const [orderedQuantity, setOrderedQuantity] = useState(0);
   const handleModal = (id) => {
     setIsModalOpen(!isModalOpen);
     setModalItem(id);
   };
 
   const handleIncrement = () => {
-    if (productQuantity < productInfo.totalQuantity) {
+    if (productQuantity < painting.totalQuantity) {
       setProductQuantity((prevState) => prevState + 1);
     }
   };
@@ -50,33 +43,84 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    if (value > productInfo.totalQuantity) {
-      setProductQuantity(productInfo.totalQuantity);
+    if (value > painting.totalQuantity) {
+      setProductQuantity(painting.totalQuantity);
     } else {
       setProductQuantity(value);
     }
   };
 
   useEffect(() => {
+    if (painting) {
+      const cartItems = JSON.parse(localStorage.getItem("cartItems"));
+      const orderedItem = cartItems
+        ? cartItems.find((cartItem) => cartItem.id === painting.id)
+        : null;
+      setOrderedQuantity(orderedItem ? orderedItem.ordered_quantity : 0);
+    }
+  }, [painting, handleAddToCart]);
+
+  const handleClickAddToCart = () => {
+    if (orderedQuantity >= painting.totalQuantity) {
+      toast.error("You have reached the maximum quantity for this item.", {
+        position: "top-right",
+        autoClose: 3000,
+        closeOnClick: true,
+        style: {
+          fontSize: "14px",
+          fontWeight: "500",
+        },
+      });
+    } else {
+      handleAddToCart(painting, productQuantity);
+      setProductQuantity(1);
+    }
+  };
+
+  useEffect(() => {
     const url = window.location.href;
-    console.log(url);
-    let decodedText = "";
-    const shopIndex = url.indexOf("/shop/");
-    if (shopIndex !== -1) {
-      const textAfterShop = url.substring(shopIndex + "/shop/".length);
-      const decoded = decodeURIComponent(textAfterShop);
-      decodedText = decoded;
+    let id = "";
+    const encodedId = url.substring(url.lastIndexOf("/") + 1);
+    try {
+      id = decodeURIComponent(encodedId);
+    } catch (e) {
+      console.error(e);
     }
 
-    if (decodedText) {
-      const product = prints.find(
-        (item) => item.name.replace(/ /g, "").toLowerCase() === decodedText
-      );
-      if (product) {
-        setProductInfo(product);
+    const getPainting = async (id) => {
+      try {
+        const docRef = doc(db, "paintings", id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          console.log("Document data:", docSnap.data());
+          setPainting({ ...docSnap.data(), id });
+        } else {
+          console.log("No such document!");
+        }
+      } catch (e) {
+        console.error(e);
       }
+    };
+
+    const getAllPaintings = async () => {
+      const querySnapshot = await getDocs(collection(db, "paintings"));
+      const paintings = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPaintings(paintings);
+    };
+
+    if (id) {
+      getPainting(id);
+      getAllPaintings();
     }
   }, []);
+
+  if (!painting) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="w-full px-28 h-full">
@@ -89,9 +133,9 @@ const Page = () => {
 
       <div className="flex flex-row items-start">
         <div className="flex flex-col w-1/2 pr-4 text-left gap-4">
-          <h1 className="text-4xl pt-4">{productInfo.name}</h1>
-          <p className="text-2xl pt-2">$ {productInfo.price}</p>
-          {productInfo.status === "Available" && (
+          <h1 className="text-4xl pt-4">{painting.name}</h1>
+          <p className="text-2xl pt-2">$ {painting.price}</p>
+          {painting.totalQuantity > 0 && (
             <div className="flex flex-col gap-2">
               <p className="text-sm pt-2">Quantity</p>
               <div
@@ -104,7 +148,7 @@ const Page = () => {
                   className="w-2/3 h-full active:outline-none focus:outline-none text-gray-400"
                   defaultValue={1}
                   min={1}
-                  max={productInfo.totalQuantity}
+                  max={painting.totalQuantity}
                   value={productQuantity}
                   onChange={(e) => {
                     const inputValue = e.target.value;
@@ -136,37 +180,37 @@ const Page = () => {
                 )}
               </div>
               <p className="text-xs text-red-500">
-                Only {productInfo.totalQuantity} left in stock - order soon.{" "}
+                Only {painting.totalQuantity} left in stock - order soon.{" "}
               </p>
             </div>
           )}
-          {productInfo.status === "Sold" && (
+          {painting.totalQuantity <= 0 && (
             <button className="w-full font-light text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
               Out of Stock
             </button>
           )}
-          {productInfo.status === "Available" && (
+          {painting.totalQuantity > 0 && (
             <button
               className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
-              onClick={() => handleAddToCart(productInfo, productQuantity)}
+              onClick={handleClickAddToCart}
             >
-              Add to Cart - {productInfo.price}
+              Add to Cart - $ {painting.price}
             </button>
           )}
-          {productInfo.status === "Available" && (
+          {painting.totalQuantity > 0 && (
             <button className="w-full font-light text-white p-4 text-sm bg-black hover:bg-[#424141]">
               Checkout
             </button>
           )}
           <div className="flex flex-col text-sm mt-2">
-            <p>{productInfo.name}</p>
-            <p>{productInfo.description}</p>
-            <p>Size: {productInfo.size}</p>
+            <p>{painting.name}</p>
+            <p>{painting.description}</p>
+            <p>Size: {painting.size}</p>
           </div>
         </div>
         <div className="flex flex-col w-1/2  ">
           <div className="flex w-full items-center justify-end">
-            <img src={productInfo.image} alt="painting" className="" />
+            <img src={painting.imageUrl} alt="painting" className="" />
           </div>
         </div>
       </div>
@@ -182,15 +226,10 @@ const Page = () => {
           </Link>
         </div>
         <div className="flex flex-row gap-4 w-full items-center justify-between mt-8">
-          {prints
-            .filter((item) => item.id !== productInfo.id)
-            .sort(
-              (a, b) =>
-                Math.abs(productInfo.id - a.id) -
-                Math.abs(productInfo.id - b.id)
-            )
+          {paintings
+            .filter((item) => item.id !== painting.id)
+            .sort(() => Math.random() - 0.5)
             .slice(0, 3)
-            .sort((a, b) => a.id - b.id)
             .map((item, index) => (
               <PaintingCard item={item} key={index} handleModal={handleModal} />
             ))}
@@ -199,7 +238,7 @@ const Page = () => {
       <PaintingViewModal
         isOpen={isModalOpen}
         closeModal={() => handleModal(null)}
-        item={prints.find((item) => item.id === modalItem)}
+        item={paintings.find((item) => item.id === modalItem)}
       />
     </div>
   );
