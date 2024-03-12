@@ -12,12 +12,12 @@ const Home = () => {
             <TextGenerateEffect words={h1} />
           </h1>
           <p className="pt-2 text-justify hyphens-auto">
-            Hi, I'm Kiran! I'm deeply passionate about art, especially painting,
-            and I love sharing that passion through teaching. Painting allows me
-            to express myself in beautiful and meaningful ways, experimenting
-            with colors, shapes, and textures. As an art teacher, I find immense
-            joy in guiding others on their creative journey, helping them
-            develop their skills and find their artistic voice.
+            Hi, I&apos;m Kiran! I&apos;m deeply passionate about art, especially
+            painting, and I love sharing that passion through teaching. Painting
+            allows me to express myself in beautiful and meaningful ways,
+            experimenting with colors, shapes, and textures. As an art teacher,
+            I find immense joy in guiding others on their creative journey,
+            helping them develop their skills and find their artistic voice.
           </p>
         </div>
       </div>
