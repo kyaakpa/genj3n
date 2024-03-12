@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { FaRegEdit } from "react-icons/fa";
@@ -32,7 +33,7 @@ const AdminPaintingCard = ({ item }) => {
         Edit
       </div>
       <div className="h-[250px] w-full bg-blue-200 relative">
-        <img
+        <Image
           src={item.imageUrl}
           alt={item.name}
           className="h-full w-full object-cover"
