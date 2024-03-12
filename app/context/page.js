@@ -1,13 +1,12 @@
 "use client";
-
 import { createContext, useEffect, useState } from "react";
 
 export const Context = createContext(null);
 
 function GlobalState({ children }) {
   const [cartItems, setCartItems] = useState(() => {
-    if (typeof localStorage !== "undefined") {
-      return JSON.parse(localStorage.getItem("cartItems")) || [];
+    if (typeof window !== "undefined") {
+      return JSON.parse(window.localStorage.getItem("cartItems")) || [];
     } else {
       return [];
     }
@@ -18,26 +17,34 @@ function GlobalState({ children }) {
       const isItemInCart = prevState.find(
         (cartItem) => cartItem.id === item.id
       );
-
       if (isItemInCart) {
         const updatedCartItems = prevState.map((cartItem) =>
           cartItem.id === item.id
             ? { ...cartItem, quantity: cartItem.quantity + quantity }
             : cartItem
         );
-        localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(
+            "cartItems",
+            JSON.stringify(updatedCartItems)
+          );
+        }
         return updatedCartItems;
       }
-
       const updatedCartItems = [...prevState, { ...item, quantity }];
-      localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "cartItems",
+          JSON.stringify(updatedCartItems)
+        );
+      }
       return updatedCartItems;
     });
   };
 
   const handleRemoveFromCart = (id) => {
     setCartItems((prevState) => {
-      return prevState
+      const updatedCartItems = prevState
         .map((cartItem) => {
           if (cartItem.id === id) {
             if (cartItem.quantity === 1) {
@@ -49,35 +56,33 @@ function GlobalState({ children }) {
           return cartItem;
         })
         .filter(Boolean);
-    });
 
-    localStorage.setItem(
-      "cartItems",
-      JSON.stringify(
-        cartItems
-          .map((cartItem) => {
-            if (cartItem.id === id) {
-              if (cartItem.quantity === 1) {
-                return null;
-              } else {
-                return { ...cartItem, quantity: cartItem.quantity - 1 };
-              }
-            }
-            return cartItem;
-          })
-          .filter(Boolean)
-      )
-    );
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "cartItems",
+          JSON.stringify(updatedCartItems)
+        );
+      }
+
+      return updatedCartItems;
+    });
   };
 
   const handleDeleteFromCart = (id) => {
     setCartItems((prevState) => {
-      return prevState.filter((cartItem) => cartItem.id !== id);
+      const updatedCartItems = prevState.filter(
+        (cartItem) => cartItem.id !== id
+      );
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          "cartItems",
+          JSON.stringify(updatedCartItems)
+        );
+      }
+
+      return updatedCartItems;
     });
-    localStorage.setItem(
-      "cartItems",
-      JSON.stringify(cartItems.filter((cartItem) => cartItem.id !== id))
-    );
   };
 
   const handleInputChange = (e, index) => {
@@ -96,13 +101,17 @@ function GlobalState({ children }) {
       });
     }
 
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      localStorage.removeItem("cartItems");
-      setCartItems([]);
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("cartItems");
+        setCartItems([]);
+      }
     }, 24 * 60 * 60 * 1000);
 
     return () => clearTimeout(timer);
