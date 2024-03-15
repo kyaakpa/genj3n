@@ -23,12 +23,12 @@ const AdminPaintingCard = ({ item }) => {
       className="relative h-[350px] w-[350px]  hover:cursor-pointer"
       onMouseEnter={() => handleHover(item.id)}
       onMouseLeave={() => handleHover(null)}
-      onClick={handleEditClick}
     >
       <div
         className={`absolute top-0 right-0 py-2 px-4 z-20 text-sm bg-red-600 text-white transition-opacity duration-200 ${
           isHovered ? "opacity-80" : "opacity-0"
         }`}
+        onClick={handleEditClick}
       >
         Edit
       </div>

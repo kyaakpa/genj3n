@@ -10,6 +10,8 @@ import { db, imgDB } from "@/app/firebase/config";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const router = useRouter();
@@ -76,8 +78,8 @@ const Page = () => {
         imageUrl: "",
       });
       setProductImage(null);
+      toast.success("Painting added successfully");
       router.push("/admin/paintings");
-      console.log("Document successfully written!");
     } catch (e) {
       console.error("Error adding document: ", e);
     }

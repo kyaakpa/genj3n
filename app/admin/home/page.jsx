@@ -7,22 +7,9 @@ import AdminLayout from "../../admin-layout";
 import PaintingsList from "../components/paintings-list";
 
 const Page = () => {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
-
-  if (!loading && !user) {
-    router.push("/admin/sign-in");
-    return null;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <AdminLayout>
       <h1>Admin Home</h1>
-      <h2>{user?.email}</h2>
     </AdminLayout>
   );
 };
