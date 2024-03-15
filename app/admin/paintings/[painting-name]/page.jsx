@@ -3,21 +3,15 @@
 import { useState, useEffect } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { RxCross1 } from "react-icons/rx";
-import { prints } from "@/public/dummyData";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AdminLayout from "@/app/admin-layout";
 import { BiSolidImageAdd } from "react-icons/bi";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
-} from "firebase/firestore";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { db, imgDB } from "@/app/firebase/config";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const router = useRouter();
@@ -64,8 +58,8 @@ const Page = () => {
   const handleDelete = async () => {
     try {
       await deleteDoc(doc(db, "paintings", id));
+      toast.success("Painting deleted successfully");
       router.push("/admin/paintings");
-      console.log("Document successfully deleted!");
     } catch (e) {
       console.error("Error removing document: ", e);
     }
@@ -76,6 +70,7 @@ const Page = () => {
       await setDoc(doc(db, "paintings", id), {
         ...painting,
       });
+      toast.success("Painting updated successfully");
       setPainting({
         name: "",
         price: "",
@@ -86,7 +81,6 @@ const Page = () => {
       });
       setProductImage(null);
       router.push("/admin/paintings");
-      console.log("Document successfully written!");
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -256,13 +250,13 @@ const Page = () => {
         )}
         <div className="flex flex-row items-start gap-4 mt-8 ">
           <button
-            className="bg-red-500 text-white p-2 w-40 active:outline-none text-sm"
+            className="bg-red-500 text-white p-4 w-40 active:outline-none text-sm"
             onClick={handleDelete}
           >
             Delete
           </button>
           <button
-            className="bg-blue-500 text-white p-2 w-40 active:outline-none text-sm"
+            className="bg-blue-500 text-white p-4 w-40 active:outline-none text-sm"
             onClick={handleSave}
           >
             Save
