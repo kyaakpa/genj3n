@@ -27,20 +27,12 @@ const Navbar = () => {
       href: "/",
     },
     {
-      name: "ABOUT",
-      href: "/about",
-    },
-    {
       name: "GALLERY",
       href: "/gallery",
     },
     {
       name: "SHOP",
       href: "/shop",
-    },
-    {
-      name: "CLASSES",
-      href: "/classes",
     },
     {
       name: "CONTACT",

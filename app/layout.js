@@ -1,5 +1,5 @@
+// RootLayout.jsx
 "use client";
-
 import Footer from "@/components/Footer";
 import "./globals.css";
 import GlobalState from "./context/page";
@@ -9,17 +9,16 @@ import { ToastContainer } from "react-toastify";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-
   const isAdminPath = pathname.startsWith("/admin");
 
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col min-h-screen">
         <GlobalState>
           {!isAdminPath && <Navbar />}
-          {children}
-          <ToastContainer />
+          <main className="flex-grow">{children}</main>
           {!isAdminPath && <Footer />}
+          <ToastContainer />
         </GlobalState>
       </body>
     </html>

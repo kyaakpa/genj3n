@@ -34,15 +34,17 @@ const Page = () => {
   };
 
   const handleCreateClass = async () => {
+    const newClassWithId = { ...newClass, id: Date.now().toString() };
+
     await setDoc(doc(db, "classes", classData.id), {
       ...classData,
-      classes: [...classData.classes, newClass],
+      classes: [...classData.classes, newClassWithId],
     });
 
     toast.success("Class created successfully!");
     setClassData((prevData) => ({
       ...prevData,
-      classes: [...prevData.classes, newClass],
+      classes: [...prevData.classes, newClassWithId],
     }));
     setNewClass({ day: "", time: "" });
     setIsCreating((prevState) => !prevState);
@@ -62,7 +64,8 @@ const Page = () => {
   const handleSaveClass = async (classId, index) => {
     try {
       const updatedClasses = [...classData.classes];
-      updatedClasses[index] = { ...updatedClasses[index], ...newClass };
+      const updatedClass = { ...updatedClasses[index], ...newClass };
+      updatedClasses[index] = updatedClass;
 
       await setDoc(doc(db, "classes", classData.id), {
         ...classData,
@@ -164,16 +167,16 @@ const Page = () => {
                     {isEditingDescription ? (
                       <>
                         <button
-                          className="bg-red-500 text-white my-8 px-4 py-2  rounded-md flex items-center"
-                          onClick={() => setIsEditingDescription(false)}
-                        >
-                          Cancel
-                        </button>
-                        <button
                           className="bg-blue-500 text-white my-8 px-4 py-2  rounded-md"
                           onClick={handleSaveDescription}
                         >
                           Save
+                        </button>
+                        <button
+                          className="bg-red-500 text-white my-8 px-4 py-2  rounded-md flex items-center"
+                          onClick={() => setIsEditingDescription(false)}
+                        >
+                          Cancel
                         </button>
                       </>
                     ) : (
