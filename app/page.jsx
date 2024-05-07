@@ -1,31 +1,21 @@
 "use client";
-import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import React from "react";
 
 const Home = () => {
-  const h1 = "Artist from Nepal";
-
   return (
-    <div className="flex max-sm:flex-col-reverse justify-center lg:px-28">
-      <div className="w-full  pt-10 pb-24 bg-pink-100 flex flex-col items-center justify-center">
-        <div className="w-4/5   sm:w-[400px] p-4">
-          <h1 className="text-2xl text-right">
-            <TextGenerateEffect words={h1} />
-          </h1>
-          <p className="pt-2 text-justify hyphens-auto">
-            Hi, I&apos;m Kiran! I&apos;m deeply passionate about art, especially
-            painting, and I love sharing that passion through teaching. Painting
-            allows me to express myself in beautiful and meaningful ways,
-            experimenting with colors, shapes, and textures. As an art teacher,
-            I find immense joy in guiding others on their creative journey,
-            helping them develop their skills and find their artistic voice.
+    <div className="flex flex-col min-h-screen justify-center items-center">
+      <div className="grid grid-cols-2 justify-between items-end">
+        <div className="p-10">
+          <h1 className="text-6xl font-light pb-6">Hi I am Phurpa Lama.</h1>
+          <p className="text-lg">
+            I am an artist. I love to draw. I am an artist. I love to draw. I am
+            an artist. I love to draw. I am an artist. I love to draw.
           </p>
         </div>
+        <div className="px-4 ml-96 mr-10">
+          <img src="./home7.png" alt="krian smiling" />
+        </div>
       </div>
-      <img
-        src="./homecover.webp"
-        alt="krian smiling"
-        className=" object-cover max-sm:min-h-[300px]"
-      />
     </div>
   );
 };
