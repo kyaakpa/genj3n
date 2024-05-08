@@ -1,10 +1,10 @@
 "use client";
 
-import PaintingCard from "@/components/ui/PaintingCard";
-import PaintingViewModal from "@/components/ui/PaintingViewModal";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
+import GalleryCard from "@/components/ui/GalleryCard";
+import GalleryViewModal from "@/components/ui/GalleryViewModal";
 
 const Page = () => {
   const [paintings, setPaintings] = useState([]);
@@ -22,7 +22,7 @@ const Page = () => {
 
   const getPaintings = async () => {
     setIsLoading(true); // Set loading state to true
-    const querySnapshot = await getDocs(collection(db, "paintings"));
+    const querySnapshot = await getDocs(collection(db, "gallery"));
     const allPaintings = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -34,7 +34,7 @@ const Page = () => {
     const endIndex = startIndex + itemsPerPage;
     const paginatedPaintings = allPaintings.slice(startIndex, endIndex);
     setPaintings(paginatedPaintings);
-    setIsLoading(false); // Set loading state to false after data is fetched
+    setIsLoading(false);
   };
 
   const handlePrevPage = () => {
@@ -56,7 +56,7 @@ const Page = () => {
   return (
     <div className="h-auto w-full pt-14 px-28">
       <div className="flex flex-col items-center w-full">
-        <h1 className="text-4xl pb-12 font-semibold">Shop</h1>
+        <h1 className="text-4xl pb-12 font-semibold">Gallery</h1>
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <span className="text-gray-500">Loading...</span>
@@ -64,7 +64,7 @@ const Page = () => {
         ) : (
           <div className="grid grid-cols-3 gap-y-4 gap-x-12">
             {paintings.map((item) => (
-              <PaintingCard
+              <GalleryCard
                 item={item}
                 key={item.id}
                 handleModal={handleModal}
@@ -73,7 +73,7 @@ const Page = () => {
           </div>
         )}
       </div>
-      <PaintingViewModal
+      <GalleryViewModal
         isOpen={isModalOpen}
         closeModal={() => handleModal(null)}
         item={paintings.find((item) => item.id === modalItem)}

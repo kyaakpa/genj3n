@@ -56,6 +56,14 @@ const AdminSidebar = () => {
               Classes
             </Link>
           </li>
+          <li>
+            <Link
+              href="/admin/gallery      "
+              className="block py-2 px-6 hover:bg-gray-700"
+            >
+              Gallery
+            </Link>
+          </li>
           {/* Add more navigation links as needed */}
         </ul>
       </nav>
