@@ -41,7 +41,7 @@ const PaintingsList = () => {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-y-4 gap-x-12 px-8 ">
+        <div className="grid grid-cols-3 gap-y-4 gap-x-12 px-8 ">
           {paintings.map((item) => (
             <AdminPaintingCard item={item} key={item.id} />
           ))}

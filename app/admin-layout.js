@@ -20,18 +20,22 @@ export default function AdminLayout({ children }) {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   return (
-    <html lang="en">
-      <body className="flex">
+    <div className="min-h-screen">
+      <div className="flex">
         {!isLoginOrSignUpPage && <AdminSidebar />}
-        <main className={`${isLoginOrSignUpPage ? "" : "ml-64"} flex-1 p-6`}>
+        <main className={`${isLoginOrSignUpPage ? "w-full" : "ml-64"} flex-1`}>
           {children}
           <ToastContainer />
         </main>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }
