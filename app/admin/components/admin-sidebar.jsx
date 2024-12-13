@@ -48,14 +48,7 @@ const AdminSidebar = () => {
               Orders
             </Link>
           </li>
-          <li>
-            <Link
-              href="/admin/classes"
-              className="block py-2 px-6 hover:bg-gray-700"
-            >
-              Classes
-            </Link>
-          </li>
+
           <li>
             <Link
               href="/admin/gallery      "

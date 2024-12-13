@@ -18,6 +18,8 @@ const OrderList = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      console.log(data);
+
       setOrders(data);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
@@ -32,13 +34,17 @@ const OrderList = () => {
   }, []);
 
   const filteredOrders = orders.filter((order) => {
-    const customerName = `${order.customerInfo?.[0]?.firstName ?? ''} ${order.customerInfo?.[0]?.lastName ?? ''}`.toLowerCase();
-    return customerName.includes(searchTerm.toLowerCase()) ||
-           order.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const customerName = `${order.customerInfo?.firstName ?? ""} ${
+      order.customerInfo?.lastName ?? ""
+    }`.toLowerCase();
+    return (
+      customerName.includes(searchTerm.toLowerCase()) ||
+      order.id.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   const getStatusStyle = (status) => {
-    return status === "Pending" 
+    return status === "Pending"
       ? { textColor: "text-[#B79153]", bgColor: "bg-[#FFECD0]" }
       : { textColor: "text-[#459D4F]", bgColor: "bg-[#D9FFDD]" };
   };
@@ -82,7 +88,7 @@ const OrderList = () => {
               Filters
             </button>
           </div>
-          
+
           {filteredOrders.length === 0 ? (
             <div className="w-full text-center py-8 text-gray-500">
               No orders found matching your search criteria.
@@ -93,7 +99,9 @@ const OrderList = () => {
                 <thead>
                   <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                     <th className="py-2 px-4 border text-left">Order ID</th>
-                    <th className="py-2 px-4 border text-left">Customer Name</th>
+                    <th className="py-2 px-4 border text-left">
+                      Customer Name
+                    </th>
                     <th className="py-2 px-4 border text-left">Status</th>
                     <th className="py-2 px-4 border text-left">Payment</th>
                     <th className="py-2 px-4 border text-left">Total Price</th>
@@ -112,22 +120,27 @@ const OrderList = () => {
                           <a href={`/admin/orders/${order.id}`}>#{order.id}</a>
                         </td>
                         <td className="py-4 px-4">
-                          {order.customerInfo?.[0]?.firstName ?? 'N/A'}{' '}
-                          {order.customerInfo?.[0]?.lastName ?? ''}
+                          {order.customerInfo?.firstName ?? "N/A"}{" "}
+                          {order.customerInfo?.lastName ?? ""}
                         </td>
+
                         <td className="py-4 px-4">
-                          <span className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}>
+                          <span
+                            className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}
+                          >
                             {order.status}
                           </span>
                         </td>
-                        <td className="py-4 px-4">{order.payment ?? 'N/A'}</td>
+                        <td className="py-4 px-4">{order.payment ?? "N/A"}</td>
                         <td className="py-4 px-4">
-                          ${order.totalPrice?.toFixed(2) ?? '0.00'}
+                          ${order.totalPrice?.toFixed(2) ?? "0.00"}
                         </td>
                         <td className="py-4 px-4">
-                          <button 
+                          <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() => {/* Add your edit logic here */}}
+                            onClick={() => {
+                              /* Add your edit logic here */
+                            }}
                           >
                             Edit
                           </button>
