@@ -13,7 +13,7 @@ const Home = () => {
           </p>
         </div>
         <div className="px-4 ml-96 mr-10">
-          <img src="./home7.png" alt="krian smiling" />
+          <img src="./home7.png" alt="self portrait" />
         </div>
       </div>
     </div>

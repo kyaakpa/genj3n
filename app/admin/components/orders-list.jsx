@@ -23,10 +23,10 @@ const OrderList = () => {
         docId: doc.id, // Ensure we have a unique identifier
         ...doc.data(),
       }));
-      
+
       // Log the fetched data for debugging
       console.log("Fetched orders:", data);
-      
+
       setOrders(data);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
@@ -39,53 +39,30 @@ const OrderList = () => {
   const handleDelete = async (orderId) => {
     if (!orderId) {
       console.error("No order ID provided for deletion");
-      toast.error("Cannot delete order: Invalid order ID",{
-        position: "top-right",
-        autoClose: 3000,
-        closeOnClick: true,
-        style: {
-          fontSize: "14px",
-          fontWeight: "500",
-        },
-      });
+      alert("Cannot delete order: Invalid order ID");
       return;
     }
 
-    
+    if (window.confirm(`Do you want to delete order#${orderId}?`)) {
+      try {
+        setDeletingOrderId(orderId);
 
-    try {
-      setDeletingOrderId(orderId);
-      
-      console.log("Attempting to delete order:", orderId);
-      
-      const orderRef = doc(db, "orders", orderId);
-      
-      await deleteDoc(orderRef);
-      
-      setOrders((prevOrders) => prevOrders.filter(order => order.docId !== orderId));
-      toast.success("Order deletd successfully",{
-        position: "top-right",
-        autoClose: 3000,
-        closeOnClick: true,
-        style: {
-          fontSize: "14px",
-          fontWeight: "500",
-        },
-      })
-  
-    } catch (error) {
-      console.error("Error removing document:", error);
-      toast.error("Failed to delete order. Please try again.",{
-        position: "top-right",
-        autoClose: 3000,
-        closeOnClick: true,
-        style: {
-          fontSize: "14px",
-          fontWeight: "500",
-        },
-      });
-    } finally {
-      setDeletingOrderId(null);
+        console.log("Attempting to delete order:", orderId);
+
+        const orderRef = doc(db, "orders", orderId);
+
+        await deleteDoc(orderRef);
+
+        setOrders((prevOrders) =>
+          prevOrders.filter((order) => order.docId !== orderId)
+        );
+        alert("Order deletd successfully");
+      } catch (error) {
+        console.error("Error removing document:", error);
+        alert("Error removing order.");
+      } finally {
+        setDeletingOrderId(null);
+      }
     }
   };
 
@@ -95,15 +72,17 @@ const OrderList = () => {
 
   const filteredOrders = orders.filter((order) => {
     if (!order) return false;
-    
+
     const customerName = `${order.customerInfo?.firstName ?? ""} ${
       order.customerInfo?.lastName ?? ""
     }`.toLowerCase();
-    
+
     const searchValue = searchTerm.toLowerCase();
-    
-    return customerName.includes(searchValue) || 
-           order.docId?.toString().toLowerCase().includes(searchValue);
+
+    return (
+      customerName.includes(searchValue) ||
+      order.docId?.toString().toLowerCase().includes(searchValue)
+    );
   });
 
   const getStatusStyle = (status) => {
@@ -162,7 +141,9 @@ const OrderList = () => {
                 <thead>
                   <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                     <th className="py-2 px-4 border text-left">Order ID</th>
-                    <th className="py-2 px-4 border text-left">Customer Name</th>
+                    <th className="py-2 px-4 border text-left">
+                      Customer Name
+                    </th>
                     <th className="py-2 px-4 border text-left">Status</th>
                     <th className="py-2 px-4 border text-left">Total Price</th>
                     <th className="py-2 px-4 border text-left">Actions</th>
@@ -171,7 +152,7 @@ const OrderList = () => {
                 <tbody>
                   {filteredOrders.map((order) => {
                     if (!order || !order.docId) return null;
-                    
+
                     const { textColor, bgColor } = getStatusStyle(order.status);
                     return (
                       <tr
@@ -179,7 +160,9 @@ const OrderList = () => {
                         className="hover:bg-gray-100 font-semibold"
                       >
                         <td className="py-4 px-4 text-blue-500">
-                          <a href={`/admin/orders/${order.docId}`}>#{order.id}</a>
+                          <a href={`/admin/orders/${order.docId}`}>
+                            #{order.id}
+                          </a>
                         </td>
                         <td className="py-4 px-4">
                           {order.customerInfo?.firstName ?? "N/A"}{" "}
@@ -198,7 +181,9 @@ const OrderList = () => {
                         <td className="py-4 px-4 space-x-2">
                           <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() => router.push(`/admin/orders/${order.docId}/edit`)}
+                            onClick={() =>
+                              router.push(`/admin/orders/${order.docId}/edit`)
+                            }
                           >
                             Edit
                           </button>
@@ -207,7 +192,9 @@ const OrderList = () => {
                             onClick={() => handleDelete(order.docId)}
                             disabled={deletingOrderId === order.docId}
                           >
-                            {deletingOrderId === order.docId ? 'Deleting...' : 'Delete'}
+                            {deletingOrderId === order.docId
+                              ? "Deleting..."
+                              : "Delete"}
                           </button>
                         </td>
                       </tr>

@@ -87,7 +87,7 @@ const Navbar = () => {
             transition: "max-height 0.5s ease-in-out",
           }}
         >
-          <ul className="mt-16">
+          <ul className="mt-16 lg:hidden">
             {navbarItems.map((item) => (
               <li key={item.name} className="p-2">
                 <Link
