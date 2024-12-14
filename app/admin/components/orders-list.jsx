@@ -103,7 +103,6 @@ const OrderList = () => {
                       Customer Name
                     </th>
                     <th className="py-2 px-4 border text-left">Status</th>
-                    <th className="py-2 px-4 border text-left">Payment</th>
                     <th className="py-2 px-4 border text-left">Total Price</th>
                     <th className="py-2 px-4 border text-left">Actions</th>
                   </tr>
@@ -131,7 +130,6 @@ const OrderList = () => {
                             {order.status}
                           </span>
                         </td>
-                        <td className="py-4 px-4">{order.payment ?? "N/A"}</td>
                         <td className="py-4 px-4">
                           ${order.totalPrice?.toFixed(2) ?? "0.00"}
                         </td>

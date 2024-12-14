@@ -55,8 +55,6 @@ const Page = () => {
     }
   };
 
-  console.log(cartItems);
-
   const calculateItemTotal = (item) => {
     return Number(item.price) * item.ordered_quantity;
   };
@@ -86,7 +84,6 @@ const Page = () => {
       });
 
       console.log("Document successfully written!");
-      console.log(order);
     } catch (e) {
       console.error("Error adding document: ", e);
     }

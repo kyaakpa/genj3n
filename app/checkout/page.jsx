@@ -6,6 +6,8 @@ import { Context } from "@/app/context/page";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useForm } from "react-hook-form";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const CheckoutPage = () => {
   const {
@@ -14,7 +16,6 @@ const CheckoutPage = () => {
     formState: { errors },
   } = useForm();
   const { cartItems } = useContext(Context);
-  const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -85,10 +86,17 @@ const CheckoutPage = () => {
           country: data.country,
         },
         status: "Pending",
-        payment: "Processing",
         totalPrice: calculateSubtotal(),
         createdAt: new Date(),
       };
+
+      try {
+        await addDoc(collection(db, "orders"), orderData);
+
+        toast.success("Order added successfully");
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
 
       // Create Stripe Checkout session
       const response = await fetch("/api/create-checkout-session", {
