@@ -93,7 +93,6 @@ const Page = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          console.log("Document data:", docSnap.data());
           setPainting({ ...docSnap.data(), id });
         } else {
           console.log("No such document!");

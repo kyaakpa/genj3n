@@ -11,6 +11,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const { orderData } = body;
+    const orderId = orderData.id;
 
     // Create line items from cart items
     const lineItems = orderData.cartItems.map((item) => ({
@@ -30,7 +31,7 @@ export async function POST(request) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/payment-success?order_id=${orderId}`,
       cancel_url: `${origin}/checkout`,
       metadata: {
         orderId: orderData.id.toString(),

@@ -2,22 +2,42 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { doc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "@/app/firebase/config";
 
 export default function PaymentSuccess() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId");
+  const orderId = searchParams.get("order_id");
 
   useEffect(() => {
     const updateOrderStatus = async () => {
       if (orderId) {
         try {
-          await updateDoc(doc(db, "orders", orderId), {
-            payment: "Paid",
-            status: "Processing",
-          });
+          // First, find the document with matching id field
+          const ordersRef = collection(db, "orders");
+          const q = query(ordersRef, where("id", "==", parseInt(orderId)));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            // Get the first matching document
+            const orderDoc = querySnapshot.docs[0];
+
+            // Update using the actual document ID
+            await updateDoc(doc(db, "orders", orderDoc.id), {
+              status: "Paid",
+            });
+          } else {
+            console.error("Order not found");
+          }
         } catch (error) {
           console.error("Error updating order status:", error);
         }
