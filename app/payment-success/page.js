@@ -12,7 +12,6 @@ import {
 import { db } from "@/app/firebase/config";
 import { Context } from "../context/page";
 
-// Separate component for the success message and button
 const SuccessContent = ({ router }) => (
   <div className="min-h-screen flex items-center justify-center p-4">
     <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md text-center max-w-md w-full">
@@ -45,6 +44,12 @@ const PaymentSuccessContent = () => {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
   const { clearCart } = useContext(Context);
+
+  useEffect(() => {
+    clearCart();
+    localStorage.removeItem("cartItems"); 
+  }, [clearCart]);
+
 
   useEffect(() => {
     const updateOrderAndStock = async () => {
@@ -124,12 +129,10 @@ const PaymentSuccessContent = () => {
         });
 
         console.log("Successfully updated order status and stock quantities");
-        clearCart();
         localStorage.removeItem("pendingOrder");
       } catch (error) {
         console.error("Error updating order status:", error);
         localStorage.removeItem("pendingOrder");
-        // You might want to show an error message to the user here
       }
     };
 
