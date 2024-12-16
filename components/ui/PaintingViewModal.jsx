@@ -1,4 +1,5 @@
 import { Context } from "@/app/context/page";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -98,9 +99,12 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
         </div>
         <div className="flex flex-row w-full h-full pb-4 ">
           <div className="h-full w-1/2">
-            <img
+            <Image
               src={item.imageUrl}
               alt={item.name}
+              width={300}
+              height={300}
+              loading="lazy"
               className="h-full w-full object-cover"
             />
           </div>

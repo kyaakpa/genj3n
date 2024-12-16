@@ -15,6 +15,7 @@ import { db } from "@/app/firebase/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Page = () => {
   const router = useRouter();
@@ -220,7 +221,15 @@ const Page = () => {
         </div>
         <div className="flex flex-col w-1/2  ">
           <div className="flex w-full items-center justify-end">
-            <img src={painting.imageUrl} alt="painting" className="" />
+            <Image
+              src={painting.imageUrl}
+              alt="painting"
+              className="w-full h-full"
+              loading="lazy"
+              width={300}
+              height={300}
+              quality={80}
+            />
           </div>
         </div>
       </div>

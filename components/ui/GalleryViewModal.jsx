@@ -1,6 +1,5 @@
+import Image from "next/image";
 import React, { useEffect } from "react";
-
-import "react-toastify/dist/ReactToastify.css";
 
 const GalleryViewModal = ({ isOpen, closeModal, item }) => {
   useEffect(() => {
@@ -22,9 +21,13 @@ const GalleryViewModal = ({ isOpen, closeModal, item }) => {
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-80">
       <div>
         <div className="flex justify-center items-center p-8">
-          <img
+          <Image
             src={item.imageUrl}
             alt={item.name}
+            width={300}
+            height={300}
+            loading="lazy"
+            quality={80}
             className="max-h-[80vh] max-w-full"
           />
         </div>

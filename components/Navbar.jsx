@@ -9,21 +9,25 @@ const Navbar = () => {
   const { cartItems } = useContext(Context);
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       const isTop = window.scrollY === 0;
       setScrolled(!isTop);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    // Check initial scroll position
+    handleScroll();
 
+    window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
-  const uniqueItemsCount = cartItems.length;
+  const uniqueItemsCount = cartItems?.length || 0;
 
   const navbarItems = [
     {
@@ -46,7 +50,7 @@ const Navbar = () => {
       name: (
         <div className="relative">
           <PiShoppingCartSimple size={22} />
-          {uniqueItemsCount > 0 && (
+          {mounted && uniqueItemsCount > 0 && (
             <span className="absolute -top-4 -right-4 bg-[#c5a365] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {uniqueItemsCount}
             </span>
@@ -60,31 +64,31 @@ const Navbar = () => {
   return (
     <div
       className={`sticky top-0 bg-white ${
-        scrolled ? "shadow-md" : ""
+        mounted && scrolled ? "shadow-md" : ""
       } z-40 transition-all duration-300 ease-in-out`}
     >
       <div
-        className={`w-full lg:px-28 px-12  ${
-          scrolled ? "py-6" : "py-12"
+        className={`w-full lg:px-28 px-12 ${
+          mounted && scrolled ? "py-6" : "py-12"
         } transition-all duration-300 ease-in-out`}
       >
-        <div className="flex flex-row  justify-between items-center ">
+        <div className="flex flex-row justify-between items-center">
+          {/* Use next/image for better performance */}
           <img
             src="./logo1.png"
             alt="genj3n logo"
             className={`w-20 transition-all duration-300 ease-in-out ${
-              scrolled ? "w-16" : ""
+              mounted && scrolled ? "w-16" : ""
             }`}
           />
           <button className="lg:hidden self-end">
             <Hamburger size={32} toggled={isOpen} toggle={setOpen} />
           </button>
-
           <div className="hidden lg:flex flex-row space-x-16 text-sm items-center">
             {navbarItems.map((item) => (
               <Link
                 href={item.href}
-                key={item.name}
+                key={typeof item.name === "string" ? item.name : item.href}
                 className="hover:cursor-pointer hover:text-[#c5a365] transition-all duration-300 ease-in-out"
               >
                 {item.name}
@@ -92,7 +96,6 @@ const Navbar = () => {
             ))}
           </div>
         </div>
-
         <div
           className="flex text-right justify-end"
           style={{
@@ -103,10 +106,13 @@ const Navbar = () => {
         >
           <ul className="mt-16 lg:hidden">
             {navbarItems.map((item) => (
-              <li key={item.name} className="p-2">
+              <li
+                key={typeof item.name === "string" ? item.name : item.href}
+                className="p-2"
+              >
                 <Link
                   href={item.href}
-                  className="hover:cursor-pointer flex justify-end hover:text-[#c5a365] transition-all duration-300 ease-in-out "
+                  className="hover:cursor-pointer flex justify-end hover:text-[#c5a365] transition-all duration-300 ease-in-out"
                 >
                   {item.name}
                 </Link>
