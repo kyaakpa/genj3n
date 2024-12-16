@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   doc,
@@ -10,42 +10,100 @@ import {
   collection,
   query,
   where,
+  runTransaction,
 } from "firebase/firestore";
 import { db } from "@/app/firebase/config";
+import { Context } from "../context/page";
 
 export default function PaymentSuccess() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
+  const {clearCart} = useContext(Context);
 
   useEffect(() => {
-    const updateOrderStatus = async () => {
+    const updateOrderAndStock = async () => {
       if (orderId) {
         try {
-          // First, find the document with matching id field
-          const ordersRef = collection(db, "orders");
-          const q = query(ordersRef, where("id", "==", parseInt(orderId)));
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            // Get the first matching document
-            const orderDoc = querySnapshot.docs[0];
-
-            // Update using the actual document ID
-            await updateDoc(doc(db, "orders", orderDoc.id), {
-              status: "Paid",
-            });
-          } else {
-            console.error("Order not found");
+          // Get the pending order from localStorage
+          const pendingOrderString = localStorage.getItem('pendingOrder');
+          if (!pendingOrderString) {
+            throw new Error("Order data not found");
           }
+
+          const pendingOrder = JSON.parse(pendingOrderString);
+
+          await runTransaction(db, async (transaction) => {
+        
+            const ordersRef = collection(db, "orders");
+            const q = query(ordersRef, where("id", "==", parseInt(orderId)));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+              return; 
+            }
+    
+            const pendingOrderString = localStorage.getItem('pendingOrder');
+            if (!pendingOrderString) {
+              return; 
+            }
+
+            const paintingReads = await Promise.all(
+              pendingOrder.cartItems.map(async (item) => {
+                const paintingRef = doc(db, "paintings", item.id);
+                const paintingDoc = await transaction.get(paintingRef);
+                
+                if (!paintingDoc.exists()) {
+                  throw new Error(`Painting ${item.id} not found`);
+                }
+                
+                return {
+                  ref: paintingRef,
+                  currentQuantity: parseInt(paintingDoc.data().totalQuantity),
+                  orderedQuantity: item.ordered_quantity,
+                  item: item
+                };
+              })
+            );
+
+            paintingReads.forEach(({ currentQuantity, orderedQuantity, item }) => {
+              const newQuantity = currentQuantity - orderedQuantity;
+              if (newQuantity < 0) {
+                throw new Error(`Insufficient stock for painting ${item.name}`);
+              }
+            });
+
+           
+            const newOrderRef = doc(collection(db, "orders"));
+            const orderData = {
+              ...pendingOrder,
+              status: "Paid",
+              payment: "Paid"
+            };
+            
+            transaction.set(newOrderRef, orderData);
+
+            paintingReads.forEach(({ ref, currentQuantity, orderedQuantity }) => {
+              const newQuantity = currentQuantity - orderedQuantity;
+              transaction.update(ref, {
+                totalQuantity: newQuantity.toString()
+              });
+            });
+          });
+
+          console.log("Successfully updated order status and stock quantities");
+          clearCart();
+          localStorage.removeItem('pendingOrder');
+          
         } catch (error) {
           console.error("Error updating order status:", error);
+          localStorage.removeItem('pendingOrder');
         }
       }
     };
 
-    updateOrderStatus();
-  }, [orderId]);
+    updateOrderAndStock();
+  }, [orderId, clearCart]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

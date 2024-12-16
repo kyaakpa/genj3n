@@ -12,6 +12,13 @@ function GlobalState({ children }) {
     }
   });
 
+  const clearCart = () => {
+    setCartItems([]);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem('cart'); 
+    }
+  };
+
   const handleAddToCart = (item, ordered_quantity = 1) => {
     setCartItems((prevState) => {
       const isItemInCart = prevState.find(
@@ -139,6 +146,7 @@ function GlobalState({ children }) {
         handleRemoveFromCart,
         handleDeleteFromCart,
         handleInputChange,
+        clearCart
       }}
     >
       {children}
