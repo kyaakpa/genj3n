@@ -1,13 +1,10 @@
 "use client";
 
 import React, { useContext, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Context } from "@/app/context/page";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useForm } from "react-hook-form";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase/config";
 
 const CheckoutPage = () => {
   const {
