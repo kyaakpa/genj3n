@@ -5,6 +5,7 @@ import PaintingViewModal from "@/components/ui/PaintingViewModal";
 import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
+import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const [paintings, setPaintings] = useState([]);

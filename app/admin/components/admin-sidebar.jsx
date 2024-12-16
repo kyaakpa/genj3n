@@ -26,14 +26,6 @@ const AdminSidebar = () => {
         <ul className="flex flex-col h-full">
           <li>
             <Link
-              href="/admin/home"
-              className="block py-2 px-6 hover:bg-gray-700"
-            >
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
               href="/admin/paintings"
               className="block py-2 px-6 hover:bg-gray-700"
             >

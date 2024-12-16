@@ -20,7 +20,7 @@ const Page = () => {
       sessionStorage.setItem("user", true);
       setEmail("");
       setPassword("");
-      router.push("/admin/home");
+      router.push("/admin/orders");
     } catch (error) {
       console.log(error);
     }
@@ -54,15 +54,6 @@ const Page = () => {
               onClick={handleSubmit}
             >
               Sign In
-            </button>
-          </div>
-          <div className="flex flex-row justify-center pt-4 text-sm gap-2">
-            <p>{"Don't have an account?"}</p>
-            <button
-              className="text-blue-500 active:outline-none"
-              onClick={() => router.push("/admin/sign-up")}
-            >
-              Sign Up
             </button>
           </div>
         </div>
