@@ -4,7 +4,6 @@ import React, { useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Context } from "@/app/context/page";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useForm } from "react-hook-form";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -27,7 +26,9 @@ const CheckoutPage = () => {
 
       if (hasErrors) {
         console.log(errors);
-        toast.error("Please fill in all required fields");
+        toast.error("Please fill in all required fields", {
+          position: "bottom-right",
+        });
         return;
       }
       setCurrentStep(currentStep + 1);
@@ -42,7 +43,9 @@ const CheckoutPage = () => {
         errors.country;
 
       if (hasErrors) {
-        toast.error("Please fill in all required fields");
+        toast.error("Please fill in all required fields", {
+          position: "bottom-right",
+        });
         return;
       }
       setCurrentStep(currentStep + 1);
@@ -69,7 +72,6 @@ const CheckoutPage = () => {
     try {
       setIsProcessing(true);
 
-      // Store order data in localStorage
       const orderData = {
         id: Math.floor(Math.random() * 1000),
         cartItems: cartItems,
@@ -91,8 +93,17 @@ const CheckoutPage = () => {
         createdAt: new Date(),
       };
 
-      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+      try {
+        await addDoc(collection(db, "orders"), orderData);
 
+        toast.success("Order added successfully", {
+          position: "bottom-right",
+        });
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      }
+
+      // Create Stripe Checkout session
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,20 +113,24 @@ const CheckoutPage = () => {
       const { url, error } = await response.json();
 
       if (error) {
-        localStorage.removeItem('pendingOrder');
-        toast.error("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.", {
+          position: "bottom-right",
+        });
         return;
       }
 
+      // Redirect to Stripe Checkout
       window.location.href = url;
     } catch (e) {
       console.error("Error:", e);
-      localStorage.removeItem('pendingOrder');
-      toast.error("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.", {
+        position: "bottom-right",
+      });
     } finally {
       setIsProcessing(false);
     }
   };
+
   return (
     <div className="min-h-screen w-full pt-14 px-28 flex items-start justify-center">
       <div className="w-full max-w-3xl">

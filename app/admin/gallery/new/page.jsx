@@ -78,7 +78,9 @@ const Page = () => {
         imageUrl: "",
       });
       setProductImage(null);
-      toast.success("Painting added to the gallery successfully");
+      toast.success("Painting added to the gallery successfully", {
+        position: "bottom-right",
+      });
       router.push("/admin/gallery");
     } catch (e) {
       console.error("Error adding document: ", e);

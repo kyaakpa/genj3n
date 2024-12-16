@@ -37,16 +37,22 @@ const ContactPage = () => {
 
       if (response.ok) {
         setStatus("success");
-        toast.success("Message sent.");
+        toast.success("Message sent.", {
+          position: "bottom-right",
+        });
         setFormData({ name: "", email: "", message: "" });
       } else {
-        toast.error("Something went wrong.");
+        toast.error("Something went wrong.", {
+          position: "bottom-right",
+        });
         setStatus("error");
 
         setErrorMessage(data.error || "Something went wrong");
       }
     } catch (error) {
-      toast.error("Something went wrong.");
+      toast.error("Something went wrong.", {
+        position: "bottom-right",
+      });
       setStatus("error");
       setErrorMessage("Failed to send message");
     }

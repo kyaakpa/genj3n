@@ -66,8 +66,8 @@ const Page = () => {
   const handleClickAddToCart = () => {
     if (orderedQuantity >= painting.totalQuantity) {
       toast.error("You have reached the maximum quantity for this item.", {
-        position: "top-right",
-        autoClose: 3000,
+        position: "bottom-right",
+        autoClose: 2000,
         closeOnClick: true,
         style: {
           fontSize: "14px",
@@ -75,7 +75,9 @@ const Page = () => {
         },
       });
     } else {
-      toast.success("Added to cart");
+      toast.success("Added to cart", {
+        position: "bottom-right",
+      });
       handleAddToCart(painting, productQuantity);
       setProductQuantity(1);
     }

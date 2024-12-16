@@ -10,7 +10,6 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
-import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const [paintings, setPaintings] = useState([]);
@@ -138,14 +137,14 @@ const Page = () => {
           </div>
           <div className="flex items-center order-1 sm:order-2 w-full sm:w-auto justify-center">
             <button
-              className="mr-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="mr-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               onClick={handlePrevPage}
               disabled={currentPage === 1 || isLoading}
             >
               Previous
             </button>
             <button
-              className="ml-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              className="ml-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               onClick={handleNextPage}
               disabled={currentPage === totalPages || isLoading}
             >

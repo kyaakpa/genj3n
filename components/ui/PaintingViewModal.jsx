@@ -30,8 +30,8 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
   const handleClickAddToCart = () => {
     if (orderedQuantity >= item.totalQuantity) {
       toast.error("You have reached the maximum quantity for this item.", {
-        position: "top-right",
-        autoClose: 3000,
+        position: "bottom-right",
+        autoClose: 2000,
         closeOnClick: true,
         style: {
           fontSize: "14px",
@@ -39,7 +39,9 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
         },
       });
     } else {
-      toast.success("Added to cart");
+      toast.success("Added to cart", {
+        position: "bottom-right",
+      });
       handleAddToCart(item, productQuantity);
       closeModal();
       setProductQuantity(1);
