@@ -14,8 +14,10 @@ import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/app/firebase/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  const router = useRouter();
   const { handleAddToCart } = useContext(Context);
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
   const [painting, setPainting] = useState();
@@ -72,9 +74,15 @@ const Page = () => {
         },
       });
     } else {
+      toast.success("Added to cart");
       handleAddToCart(painting, productQuantity);
       setProductQuantity(1);
     }
+  };
+
+  const handleCheckout = () => {
+    handleClickAddToCart();
+    router.push("/cart");
   };
 
   useEffect(() => {
@@ -184,20 +192,23 @@ const Page = () => {
             </div>
           )}
           {painting.totalQuantity <= 0 && (
-            <button className="w-full font-light text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
+            <button className="w-full text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
               Out of Stock
             </button>
           )}
           {painting.totalQuantity > 0 && (
             <button
-              className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
+              className="w-full text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
               onClick={handleClickAddToCart}
             >
               Add to Cart - $ {painting.price}
             </button>
           )}
           {painting.totalQuantity > 0 && (
-            <button className="w-full font-light text-white p-4 text-sm bg-black hover:bg-[#424141]">
+            <button
+              className="w-full  text-white p-4 text-sm bg-black hover:bg-[#424141]"
+              onClick={handleCheckout}
+            >
               Checkout
             </button>
           )}

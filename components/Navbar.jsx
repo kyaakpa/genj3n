@@ -92,6 +92,7 @@ const Navbar = () => {
             ))}
           </div>
         </div>
+
         <div
           className="flex text-right justify-end"
           style={{
@@ -105,7 +106,7 @@ const Navbar = () => {
               <li key={item.name} className="p-2">
                 <Link
                   href={item.href}
-                  className="hover:cursor-pointer hover:text-[#c5a365] transition-all duration-300 ease-in-out"
+                  className="hover:cursor-pointer flex justify-end hover:text-[#c5a365] transition-all duration-300 ease-in-out "
                 >
                   {item.name}
                 </Link>

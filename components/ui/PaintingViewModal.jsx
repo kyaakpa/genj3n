@@ -1,5 +1,4 @@
 import { Context } from "@/app/context/page";
-import { prints } from "@/public/dummyData";
 import Link from "next/link";
 import React, { useContext, useEffect, useState } from "react";
 import {
@@ -39,6 +38,7 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
         },
       });
     } else {
+      toast.success("Added to cart");
       handleAddToCart(item, productQuantity);
       closeModal();
       setProductQuantity(1);
@@ -105,8 +105,8 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
             />
           </div>
           <div className="flex flex-col h-full w-1/2 pl-20 gap-2">
-            <p className="text-2xl font-light ">{item.name}</p>
-            <p className="text-xl font-light">$ {item.price}</p>
+            <p className="text-2xl">{item.name}</p>
+            <p className="text-xl">$ {item.price}</p>
 
             {item.totalQuantity > 0 && (
               <>
@@ -159,20 +159,20 @@ const PaintingViewModal = ({ isOpen, closeModal, item }) => {
             )}
 
             {item.totalQuantity <= 0 && (
-              <button className="w-full font-light text-white p-4 mt-6 text-sm  bg-gray-500 opacity-50 cursor-not-allowed">
+              <button className="w-full text-white p-4 mt-6 text-sm  bg-gray-500 opacity-50 cursor-not-allowed">
                 Sold Out
               </button>
             )}
             {item.totalQuantity > 0 && (
               <button
-                className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] "
+                className="w-full text-white p-4 mt-6 text-sm bg-[#c5a365] "
                 onClick={handleClickAddToCart}
               >
                 Add to Cart
               </button>
             )}
             <Link href={`/shop/${item.id}`}>
-              <p className="text-sm text-[#c5a365] underline font-light mt-2">
+              <p className="text-sm text-[#c5a365] underline mt-2">
                 View Details
               </p>
             </Link>
