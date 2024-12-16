@@ -11,7 +11,6 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const router = useRouter();
@@ -78,7 +77,9 @@ const Page = () => {
         imageUrl: "",
       });
       setProductImage(null);
-      toast.success("Painting added successfully");
+      toast.success("Painting added successfully", {
+        position: "bottom-right",
+      });
       router.push("/admin/paintings");
     } catch (e) {
       console.error("Error adding document: ", e);

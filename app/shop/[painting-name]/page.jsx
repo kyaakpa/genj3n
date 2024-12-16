@@ -14,8 +14,11 @@ import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/app/firebase/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Page = () => {
+  const router = useRouter();
   const { handleAddToCart } = useContext(Context);
   const [isHoveredAndActive, setIsHoveredAndActive] = useState(false);
   const [painting, setPainting] = useState();
@@ -63,8 +66,8 @@ const Page = () => {
   const handleClickAddToCart = () => {
     if (orderedQuantity >= painting.totalQuantity) {
       toast.error("You have reached the maximum quantity for this item.", {
-        position: "top-right",
-        autoClose: 3000,
+        position: "bottom-right",
+        autoClose: 2000,
         closeOnClick: true,
         style: {
           fontSize: "14px",
@@ -72,9 +75,17 @@ const Page = () => {
         },
       });
     } else {
+      toast.success("Added to cart", {
+        position: "bottom-right",
+      });
       handleAddToCart(painting, productQuantity);
       setProductQuantity(1);
     }
+  };
+
+  const handleCheckout = () => {
+    handleClickAddToCart();
+    router.push("/cart");
   };
 
   useEffect(() => {
@@ -118,7 +129,12 @@ const Page = () => {
   }, []);
 
   if (!painting) {
-    return <div>Loading...</div>;
+    
+    return  (
+    <div className="flex justify-center items-center h-48 md:h-64">
+      <span className="text-gray-500">Loading...</span>
+      </div>
+    )
   }
 
   return (
@@ -184,20 +200,23 @@ const Page = () => {
             </div>
           )}
           {painting.totalQuantity <= 0 && (
-            <button className="w-full font-light text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
+            <button className="w-full text-white p-4 mt-6 text-sm bg-gray-500 opacity-50 cursor-not-allowed">
               Out of Stock
             </button>
           )}
           {painting.totalQuantity > 0 && (
             <button
-              className="w-full font-light text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
+              className="w-full text-white p-4 mt-6 text-sm bg-[#c5a365] hover:bg-[#c9ae7c]"
               onClick={handleClickAddToCart}
             >
               Add to Cart - $ {painting.price}
             </button>
           )}
           {painting.totalQuantity > 0 && (
-            <button className="w-full font-light text-white p-4 text-sm bg-black hover:bg-[#424141]">
+            <button
+              className="w-full  text-white p-4 text-sm bg-black hover:bg-[#424141]"
+              onClick={handleCheckout}
+            >
               Checkout
             </button>
           )}
@@ -209,7 +228,15 @@ const Page = () => {
         </div>
         <div className="flex flex-col w-1/2  ">
           <div className="flex w-full items-center justify-end">
-            <img src={painting.imageUrl} alt="painting" className="" />
+            <Image
+              src={painting.imageUrl}
+              alt="painting"
+              className="w-full h-full"
+              loading="lazy"
+              width={300}
+              height={300}
+              quality={80}
+            />
           </div>
         </div>
       </div>

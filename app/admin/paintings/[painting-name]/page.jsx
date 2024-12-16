@@ -11,7 +11,6 @@ import { db, imgDB } from "@/app/firebase/config";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { v4 } from "uuid";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const Page = () => {
   const router = useRouter();
@@ -58,7 +57,9 @@ const Page = () => {
   const handleDelete = async () => {
     try {
       await deleteDoc(doc(db, "paintings", id));
-      toast.success("Painting deleted successfully");
+      toast.success("Painting deleted successfully", {
+        position: "bottom-right",
+      });
       router.push("/admin/paintings");
     } catch (e) {
       console.error("Error removing document: ", e);
@@ -70,7 +71,9 @@ const Page = () => {
       await setDoc(doc(db, "paintings", id), {
         ...painting,
       });
-      toast.success("Painting updated successfully");
+      toast.success("Painting updated successfully", {
+        position: "bottom-right",
+      });
       setPainting({
         name: "",
         price: "",

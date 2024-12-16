@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -27,9 +28,13 @@ const GalleryCard = ({ item, handleModal }) => {
         </div>
       )}
       <div className="h-[500px] w-full bg-blue-200 relative">
-        <img
+        <Image
           src={item.imageUrl}
           alt={item.name}
+          width={300}
+          height={300}
+          quality={80}
+          loading="lazy"
           className="h-full w-full object-cover"
         />
         <div
