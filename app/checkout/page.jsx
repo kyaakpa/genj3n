@@ -69,6 +69,7 @@ const CheckoutPage = () => {
     try {
       setIsProcessing(true);
 
+      // Store order data in localStorage
       const orderData = {
         id: Math.floor(Math.random() * 1000),
         cartItems: cartItems,
@@ -90,15 +91,8 @@ const CheckoutPage = () => {
         createdAt: new Date(),
       };
 
-      try {
-        await addDoc(collection(db, "orders"), orderData);
+      localStorage.setItem('pendingOrder', JSON.stringify(orderData));
 
-        toast.success("Order added successfully");
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
-
-      // Create Stripe Checkout session
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,20 +102,20 @@ const CheckoutPage = () => {
       const { url, error } = await response.json();
 
       if (error) {
+        localStorage.removeItem('pendingOrder');
         toast.error("Something went wrong. Please try again.");
         return;
       }
 
-      // Redirect to Stripe Checkout
       window.location.href = url;
     } catch (e) {
       console.error("Error:", e);
+      localStorage.removeItem('pendingOrder');
       toast.error("An error occurred. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
-
   return (
     <div className="min-h-screen w-full pt-14 px-28 flex items-start justify-center">
       <div className="w-full max-w-3xl">
