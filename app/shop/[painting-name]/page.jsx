@@ -129,7 +129,12 @@ const Page = () => {
   }, []);
 
   if (!painting) {
-    return <div>Loading...</div>;
+    
+    return  (
+    <div className="flex justify-center items-center h-48 md:h-64">
+      <span className="text-gray-500">Loading...</span>
+      </div>
+    )
   }
 
   return (
