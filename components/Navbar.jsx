@@ -70,10 +70,10 @@ const Navbar = () => {
       >
         <div className="flex flex-row  justify-between items-center ">
           <img
-            src="./logo.png"
-            alt="kiran paintings logo"
-            className={`w-32 transition-all duration-300 ease-in-out ${
-              scrolled ? "w-20" : ""
+            src="./logo1.png"
+            alt="genj3n logo"
+            className={`w-20 transition-all duration-300 ease-in-out ${
+              scrolled ? "w-16" : ""
             }`}
           />
           <button className="lg:hidden self-end">
