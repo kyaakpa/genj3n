@@ -1,10 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { PiShoppingCartSimple } from "react-icons/pi";
 import Hamburger from "hamburger-react";
 import Link from "next/link";
+import { Context } from "@/app/context/page";
 
 const Navbar = () => {
+  const { cartItems } = useContext(Context);
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setOpen] = useState(false);
 
@@ -20,6 +22,8 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  const uniqueItemsCount = cartItems.length;
 
   const navbarItems = [
     {
@@ -39,7 +43,16 @@ const Navbar = () => {
       href: "/contact",
     },
     {
-      name: <PiShoppingCartSimple size={22} />,
+      name: (
+        <div className="relative">
+          <PiShoppingCartSimple size={22} />
+          {uniqueItemsCount > 0 && (
+            <span className="absolute -top-4 -right-4 bg-[#c5a365] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {uniqueItemsCount}
+            </span>
+          )}
+        </div>
+      ),
       href: "/cart",
     },
   ];
