@@ -45,10 +45,6 @@ const PaymentSuccessContent = () => {
   const orderId = searchParams.get("order_id");
   const { clearCart } = useContext(Context);
 
-  useEffect(() => {
-    clearCart();
-    localStorage.removeItem("cartItems"); 
-  }, [clearCart]);
 
 
   useEffect(() => {
@@ -57,68 +53,66 @@ const PaymentSuccessContent = () => {
         console.error("No order ID found");
         return;
       }
-
+  
       try {
         const pendingOrderString = localStorage.getItem("pendingOrder");
         if (!pendingOrderString) {
           console.error("Order data not found");
           return;
         }
-
+  
         const pendingOrder = JSON.parse(pendingOrderString);
-
+  
         await runTransaction(db, async (transaction) => {
-          // Check if order already exists
+          // STEP 1: Perform all reads first
+          // Check if order exists
           const ordersRef = collection(db, "orders");
           const q = query(ordersRef, where("id", "==", parseInt(orderId)));
           const querySnapshot = await getDocs(q);
-
+  
           if (!querySnapshot.empty) {
             console.log("Order already processed");
             return;
           }
-
-          // Read all paintings and verify stock
+  
+          // Read all painting documents
           const paintingReads = await Promise.all(
             pendingOrder.cartItems.map(async (item) => {
               const paintingRef = doc(db, "paintings", item.id);
               const paintingDoc = await transaction.get(paintingRef);
-
+  
               if (!paintingDoc.exists()) {
                 throw new Error(`Painting ${item.id} not found`);
               }
-
+  
               return {
                 ref: paintingRef,
                 currentQuantity: parseInt(paintingDoc.data().totalQuantity),
                 orderedQuantity: item.ordered_quantity,
-                item: item,
+                item: item
               };
             })
           );
-
+  
           // Verify stock levels
-          paintingReads.forEach(
-            ({ currentQuantity, orderedQuantity, item }) => {
-              const newQuantity = currentQuantity - orderedQuantity;
-              if (newQuantity < 0) {
-                throw new Error(`Insufficient stock for painting ${item.name}`);
-              }
+          paintingReads.forEach(({ currentQuantity, orderedQuantity, item }) => {
+            const newQuantity = currentQuantity - orderedQuantity;
+            if (newQuantity < 0) {
+              throw new Error(`Insufficient stock for painting ${item.name}`);
             }
-          );
-
+          });
+  
+          // STEP 2: Perform all writes after reads are complete
           // Create new order
           const newOrderRef = doc(collection(db, "orders"));
-          const orderData = {
+          transaction.set(newOrderRef, {
             ...pendingOrder,
             status: "Paid",
             payment: "Paid",
             updatedAt: new Date().toISOString(),
-          };
-
-          transaction.set(newOrderRef, orderData);
-
-          // Update stock quantities
+          });
+  
+          // Update all painting quantities
           paintingReads.forEach(({ ref, currentQuantity, orderedQuantity }) => {
             const newQuantity = currentQuantity - orderedQuantity;
             transaction.update(ref, {
@@ -127,17 +121,20 @@ const PaymentSuccessContent = () => {
             });
           });
         });
-
+  
         console.log("Successfully updated order status and stock quantities");
+        clearCart();
         localStorage.removeItem("pendingOrder");
+        localStorage.removeItem("cartItems");
       } catch (error) {
         console.error("Error updating order status:", error);
-        localStorage.removeItem("pendingOrder");
+        // Keep the pending order in localStorage in case of error
+        // Consider adding retry logic or user notification here
       }
     };
-
+  
     updateOrderAndStock();
-  }, [orderId, clearCart]);
+  }, [orderId]);
 
   return <SuccessContent router={router} />;
 };

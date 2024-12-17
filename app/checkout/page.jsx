@@ -4,6 +4,7 @@ import React, { useContext, useState } from "react";
 import { Context } from "@/app/context/page";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
+import Image from "next/image";
 
 const CheckoutPage = () => {
   const {
@@ -12,46 +13,7 @@ const CheckoutPage = () => {
     formState: { errors },
   } = useForm();
   const { cartItems } = useContext(Context);
-
-  const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleNextStep = () => {
-    if (currentStep === 1) {
-      const hasErrors =
-        errors.firstName || errors.lastName || errors.email || errors.phone;
-
-      if (hasErrors) {
-        console.log(errors);
-        toast.error("Please fill in all required fields", {
-          position: "bottom-right",
-        });
-        return;
-      }
-      setCurrentStep(currentStep + 1);
-    }
-
-    if (currentStep === 2) {
-      const hasErrors =
-        errors.street ||
-        errors.city ||
-        errors.state ||
-        errors.postalCode ||
-        errors.country;
-
-      if (hasErrors) {
-        toast.error("Please fill in all required fields", {
-          position: "bottom-right",
-        });
-        return;
-      }
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
 
   const calculateItemTotal = (item) => {
     return Number(item.price) * item.ordered_quantity;
@@ -68,7 +30,7 @@ const CheckoutPage = () => {
   const handleOrderSubmit = async (data) => {
     try {
       setIsProcessing(true);
-
+  
       const orderData = {
         id: Math.floor(Math.random() * 1000),
         cartItems: cartItems,
@@ -78,45 +40,33 @@ const CheckoutPage = () => {
           email: data.email,
           phone: data.phone,
         },
-        address: {
-          street: data.street,
-          city: data.city,
-          state: data.state,
-          postalCode: data.postalCode,
-          country: data.country,
-        },
         status: "Pending",
         totalPrice: calculateSubtotal(),
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       };
-
-      try {
-        await addDoc(collection(db, "orders"), orderData);
-
-        toast.success("Order added successfully", {
-          position: "bottom-right",
-        });
-      } catch (e) {
-        console.error("Error adding document: ", e);
-      }
-
-      // Create Stripe Checkout session
+  
+      localStorage.setItem("pendingOrder", JSON.stringify(orderData));
+  
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderData }),
       });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
 
       const { url, error } = await response.json();
-
+  
       if (error) {
         toast.error("Something went wrong. Please try again.", {
           position: "bottom-right",
         });
         return;
       }
-
-      // Redirect to Stripe Checkout
+  
       window.location.href = url;
     } catch (e) {
       console.error("Error:", e);
@@ -129,215 +79,121 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full pt-14 px-28 flex items-start justify-center">
-      <div className="w-full max-w-3xl">
-        {/* Step indicators */}
-        <div className="flex justify-between mb-2">
-          <div className="flex items-center">
-            <div
-              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mr-2 text-sm ${
-                currentStep === 1
-                  ? "bg-black text-white border-black"
-                  : "bg-gray-400 border-gray-400 text-white"
-              }`}
-            >
-              1
+    <div className="min-h-screen w-full pt-14 px-28">
+      <h2 className="text-2xl font-semibold mb-8">Checkout</h2>
+      
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Order Summary Section */}
+        <div className="lg:w-2/3">
+          <div className="bg-white p-6 shadow-sm border mb-6">
+            <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+            <div className="space-y-4">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex gap-4 py-3 border-b">
+                  <div className="w-24 h-24 relative flex-shrink-0">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.name}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                    />
+                  </div>
+                  <div className="flex-grow flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">{item.name}</h4>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-800">
+                        {item.ordered_quantity} x ${item.price}
+                      </p>
+                      <p className="font-medium mt-1">
+                        ${calculateItemTotal(item)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <span>Information</span>
-          </div>
-          <div className="flex items-center">
-            <div
-              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mr-2 text-sm ${
-                currentStep === 2
-                  ? "bg-black text-white border-black"
-                  : "bg-gray-400 border-gray-400 text-white"
-              }`}
-            >
-              2
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold">Total</span>
+                <span className="font-semibold">${calculateSubtotal()}</span>
+              </div>
             </div>
-            <span>Address</span>
-          </div>
-          <div className="flex items-center">
-            <div
-              className={`w-8 h-8 rounded-full border-2 flex items-center justify-center mr-2 text-sm ${
-                currentStep === 3
-                  ? "bg-black text-white border-black"
-                  : "bg-gray-400 border-gray-400 text-white"
-              }`}
-            >
-              3
-            </div>
-            <span>Review</span>
           </div>
         </div>
-        <div className="w-full border border-b-[1px] mb-4" />
 
-        {/* Step 1: Information */}
-        {currentStep === 1 && (
-          <div>
-            <h3 className="text-md font-semibold mb-2">Information</h3>
-            <div className="flex flex-col gap-4">
-              <input
-                className="w-full border p-2 rounded"
-                placeholder="First Name"
-                {...register("firstName", {
-                  required: "First Name is required",
-                })}
-              />
-              {errors.firstName && (
-                <p className="text-red-500 text-xs">
-                  {errors.firstName.message}
-                </p>
-              )}
-              <input
-                className="w-full border p-2 rounded"
-                placeholder="Last Name"
-                {...register("lastName", { required: "Last Name is required" })}
-              />
-              {errors.lastName && (
-                <p className="text-red-500 text-xs">
-                  {errors.lastName.message}
-                </p>
-              )}
-              <input
-                className="w-full border p-2 rounded"
-                placeholder="Email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
-                    message: "Invalid email address",
-                  },
-                })}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs">{errors.email.message}</p>
-              )}
-              <input
-                className="w-full border p-2 rounded"
-                placeholder="Phone"
-                {...register("phone", {
-                  required: "Phone is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Invalid phone number",
-                  },
-                })}
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-xs">{errors.phone.message}</p>
-              )}
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                className="bg-[#333333] text-white p-4 rounded text-sm"
-                onClick={handleNextStep}
-              >
-                CONTINUE
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Address */}
-        {currentStep === 2 && (
-          <div>
-            <h3 className="text-md font-semibold mb-2">Address</h3>
-            <input
-              className="w-full border p-2 rounded mb-4"
-              placeholder="Street Address"
-              {...register("street", { required: "Street is required" })}
-            />
-            {errors.street && (
-              <p className="text-red-500 text-xs">{errors.street.message}</p>
-            )}
-            <input
-              className="w-full border p-2 rounded mb-4"
-              placeholder="City"
-              {...register("city", { required: "City is required" })}
-            />
-            {errors.city && (
-              <p className="text-red-500 text-xs">{errors.city.message}</p>
-            )}
-            <input
-              className="w-full border p-2 rounded mb-4"
-              placeholder="State/Province"
-              {...register("state", { required: "State is required" })}
-            />
-            {errors.state && (
-              <p className="text-red-500 text-xs">{errors.state.message}</p>
-            )}
-            <input
-              className="w-full border p-2 rounded mb-4"
-              placeholder="Zip/Postal Code"
-              {...register("postalCode", {
-                required: "Postal Code is required",
-              })}
-            />
-            {errors.postalCode && (
-              <p className="text-red-500 text-xs">
-                {errors.postalCode.message}
-              </p>
-            )}
-            <input
-              className="w-full border p-2 rounded mb-4"
-              placeholder="Country"
-              {...register("country", { required: "Country is required" })}
-            />
-            {errors.country && (
-              <p className="text-red-500 text-xs">{errors.country.message}</p>
-            )}
-            <div className="flex justify-between mt-4">
-              <button
-                className="bg-gray-300 text-black p-4 rounded text-sm"
-                onClick={handlePrevStep}
-              >
-                PREVIOUS
-              </button>
-              <button
-                className="bg-[#333333] text-white p-4 rounded text-sm"
-                onClick={handleNextStep}
-              >
-                CONTINUE
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Review */}
-        {currentStep === 3 && (
-          <div>
-            <h3 className="text-md font-semibold mb-2">Review Order</h3>
-            <div className="flex flex-row w-full justify-between text-sm text-black pb-4">
-              <h1 className="text-sm font-semibold">Product</h1>
-              <h1 className="text-sm font-semibold">Subtotal</h1>
-            </div>
-            <div className="w-full border border-b-1" />
-            {cartItems.map((item) => (
-              <div
-                className="flex flex-row py-3 justify-between items-center border-b-2"
-                key={item.id}
-              >
-                <h1 className="text-sm">
-                  {item.name} x {item.ordered_quantity}
-                </h1>
-                <h1 className="text-sm">${calculateItemTotal(item)}</h1>
+        {/* Customer Information Section */}
+        <div className="lg:w-1/3">
+          <div className="bg-white p-6 shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
+            <div className="space-y-4">
+              <div>
+                <input
+                  className="w-full border p-2"
+                  placeholder="First Name"
+                  {...register("firstName", {
+                    required: "First Name is required",
+                  })}
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.firstName.message}
+                  </p>
+                )}
               </div>
-            ))}
-            <div className="flex flex-row w-full justify-between text-sm text-black border-b-2 py-3">
-              <h1 className="text-sm font-semibold">Total</h1>
-              <h1 className="text-sm font-semibold">${calculateSubtotal()}</h1>
+              
+              <div>
+                <input
+                  className="w-full border p-2"
+                  placeholder="Last Name"
+                  {...register("lastName", { required: "Last Name is required" })}
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.lastName.message}
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <input
+                  className="w-full border p-2"
+                  placeholder="Email"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
+                      message: "Invalid email address",
+                    },
+                  })}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                )}
+              </div>
+              
+              <div>
+                <input
+                  className="w-full border p-2"
+                  placeholder="Phone"
+                  {...register("phone", {
+                    required: "Phone is required",
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: "Invalid phone number",
+                    },
+                  })}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+                )}
+              </div>
             </div>
 
-            <div className="flex justify-between mt-4">
+            <div className="mt-6">
               <button
-                className="bg-gray-300 text-black p-4 rounded text-sm"
-                onClick={handlePrevStep}
-              >
-                PREVIOUS
-              </button>
-              <button
-                className="bg-[#333333] text-white p-4 rounded text-sm disabled:opacity-50"
+                className="w-full bg-[#333333] text-white p-4 text-sm disabled:opacity-50 hover:bg-black transition-colors"
                 onClick={handleSubmit(handleOrderSubmit)}
                 disabled={isProcessing}
               >
@@ -345,7 +201,7 @@ const CheckoutPage = () => {
               </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
