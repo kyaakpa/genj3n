@@ -3,7 +3,6 @@
 import { db } from "@/app/firebase/config";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 const OrderList = () => {
@@ -12,6 +11,7 @@ const OrderList = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const router = useRouter();
 
   const getOrders = async () => {
@@ -20,14 +20,11 @@ const OrderList = () => {
       const querySnapshot = await getDocs(collection(db, "orders"));
       const data = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        docId: doc.id, // Ensure we have a unique identifier
+        docId: doc.id,
         ...doc.data(),
       }));
-
-      // Log the fetched data for debugging
-      console.log("Fetched orders:", data);
-
       setOrders(data);
+      console.log(data);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
       console.error("Error fetching orders:", err);
@@ -46,17 +43,12 @@ const OrderList = () => {
     if (window.confirm(`Do you want to delete order#${orderId}?`)) {
       try {
         setDeletingOrderId(orderId);
-
-        console.log("Attempting to delete order:", orderId);
-
         const orderRef = doc(db, "orders", orderId);
-
         await deleteDoc(orderRef);
-
         setOrders((prevOrders) =>
           prevOrders.filter((order) => order.docId !== orderId)
         );
-        alert("Order deletd successfully");
+        alert("Order deleted successfully");
       } catch (error) {
         console.error("Error removing document:", error);
         alert("Error removing order.");
@@ -89,6 +81,176 @@ const OrderList = () => {
     return status === "Pending"
       ? { textColor: "text-[#B79153]", bgColor: "bg-[#FFECD0]" }
       : { textColor: "text-[#459D4F]", bgColor: "bg-[#D9FFDD]" };
+  };
+
+  // Professional bill popup component
+  const BillPopup = ({ order, onClose }) => {
+    if (!order) return null;
+
+    const handlePrint = () => {
+      window.print();
+    };
+
+    const formattedDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 print:p-0">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full print:shadow-none print:max-w-full">
+          {/* Header Section */}
+          <div className="border-b">
+            <div className="p-8">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
+                  <p className="text-gray-600 mt-1">#{order.id}</p>
+                </div>
+                <button 
+                  onClick={onClose}
+                  className="text-gray-400 hover:text-gray-600 print:hidden"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="mt-6 grid grid-cols-2 gap-8">
+                <div>
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Bill To</h2>
+                  <div className="mt-2">
+                    <p className="text-gray-900 font-medium">
+                      {order.customerInfo?.firstName} {order.customerInfo?.lastName}
+                    </p>
+                    <p className="text-gray-600 mt-1">{order.customerInfo?.email}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Invoice Details</h2>
+                  <div className="mt-2">
+                    <p className="text-gray-900">Date: {formattedDate}</p>
+                    <p className="text-gray-900 mt-1">Status: 
+                      <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        order.status === 'Pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Items Section */}
+          <div className="p-8">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 font-semibold text-gray-500 uppercase tracking-wider">Item</th>
+                  <th className="text-center py-3 font-semibold text-gray-500 uppercase tracking-wider">Qty</th>
+                  <th className="text-right py-3 font-semibold text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="text-right py-3 font-semibold text-gray-500 uppercase tracking-wider">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {order.cartItems?.map((item, index) => (
+                  <tr key={index}>
+                    <td className="py-4">
+                      <p className="text-gray-900 font-medium">{item.name}</p>
+                    </td>
+                    <td className="py-4 text-center text-gray-600">{item.ordered_quantity}</td>
+                    <td className="py-4 text-right text-gray-600">${item.price}</td>
+                    <td className="py-4 text-right text-gray-900 font-medium">
+                      ${(item.price * item.ordered_quantity).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Summary */}
+            <div className="mt-8 border-t pt-8">
+              <div className="flex justify-end">
+                <div className="w-64">
+                  <div className="flex justify-between mb-4">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-900 font-medium">${order.totalPrice?.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-200 pt-4">
+                    <span className="text-lg font-bold text-gray-900">Total</span>
+                    <span className="text-lg font-bold text-gray-900">${order.totalPrice?.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with Print Button */}
+          <div className="bg-gray-50 px-8 py-6 print:hidden">
+            <div className="flex justify-end">
+              <button
+                onClick={handlePrint}
+                className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Invoice
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Print Styles */}
+        <style jsx global>{`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .bg-black.bg-opacity-50 {
+              background: none !important;
+            }
+            .max-w-2xl {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            .bg-white,
+            .bg-white * {
+              visibility: visible;
+            }
+            .bg-white {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+            }
+            .print\\:hidden {
+              display: none !important;
+            }
+            .rounded-lg {
+              border-radius: 0 !important;
+            }
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            table {
+              page-break-inside: auto;
+            }
+            tr {
+              page-break-inside: avoid;
+              page-break-after: auto;
+            }
+          }
+        `}</style>
+      </div>
+    );
   };
 
   if (loading) {
@@ -141,9 +303,7 @@ const OrderList = () => {
                 <thead>
                   <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                     <th className="py-2 px-4 border text-left">Order ID</th>
-                    <th className="py-2 px-4 border text-left">
-                      Customer Name
-                    </th>
+                    <th className="py-2 px-4 border text-left">Customer Name</th>
                     <th className="py-2 px-4 border text-left">Status</th>
                     <th className="py-2 px-4 border text-left">Total Price</th>
                     <th className="py-2 px-4 border text-left">Actions</th>
@@ -156,22 +316,18 @@ const OrderList = () => {
                     const { textColor, bgColor } = getStatusStyle(order.status);
                     return (
                       <tr
-                        key={order.docId} // Use the unique docId as key
+                        key={order.docId}
                         className="hover:bg-gray-100 font-semibold"
                       >
                         <td className="py-4 px-4 text-blue-500">
-                          <a href={`/admin/orders/${order.docId}`}>
-                            #{order.id}
-                          </a>
+                          <a href={`/admin/orders/${order.docId}`}>#{order.id}</a>
                         </td>
                         <td className="py-4 px-4">
                           {order.customerInfo?.firstName ?? "N/A"}{" "}
                           {order.customerInfo?.lastName ?? ""}
                         </td>
                         <td className="py-4 px-4">
-                          <span
-                            className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}
-                          >
+                          <span className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}>
                             {order.status}
                           </span>
                         </td>
@@ -181,9 +337,7 @@ const OrderList = () => {
                         <td className="py-4 px-4 space-x-2">
                           <button
                             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() =>
-                              router.push(`/admin/orders/${order.docId}/edit`)
-                            }
+                            onClick={() => router.push(`/admin/orders/${order.docId}/edit`)}
                           >
                             Edit
                           </button>
@@ -192,9 +346,13 @@ const OrderList = () => {
                             onClick={() => handleDelete(order.docId)}
                             disabled={deletingOrderId === order.docId}
                           >
-                            {deletingOrderId === order.docId
-                              ? "Deleting..."
-                              : "Delete"}
+                            {deletingOrderId === order.docId ? "Deleting..." : "Delete"}
+                          </button>
+                          <button
+                            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            View
                           </button>
                         </td>
                       </tr>
@@ -206,6 +364,14 @@ const OrderList = () => {
           )}
         </div>
       </div>
+
+      {/* Bill Popup */}
+      {selectedOrder && (
+        <BillPopup 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)} 
+        />
+      )}
     </div>
   );
 };
