@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { headers } from "next/headers";
 
+// Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
   try {
-    const headersList = headers();
-    const origin = headersList.get("origin") || "http://localhost:3000";
-
+    // Get the request body
     const body = await request.json();
     const { orderData } = body;
-    const orderId = orderData.id;
+
+    if (!orderData || !orderData.cartItems || !orderData.customerInfo) {
+      return NextResponse.json(
+        { error: "Missing required order data" },
+        { status: 400 }
+      );
+    }
 
     // Create line items from cart items
     const lineItems = orderData.cartItems.map((item) => ({
@@ -20,6 +24,7 @@ export async function POST(request) {
         product_data: {
           name: item.name,
           description: item.description || "",
+          images: item.image ? [item.image] : [],
         },
         unit_amount: Math.round(item.price * 100), // Convert to cents
       },
@@ -31,20 +36,23 @@ export async function POST(request) {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/payment-success?order_id=${orderId}`,
-      cancel_url: `${origin}/checkout`,
+      success_url: `${request.headers.get("origin")}/payment-success?order_id=${orderData.id}`,
+      cancel_url: `${request.headers.get("origin")}/checkout`,
       metadata: {
         orderId: orderData.id.toString(),
       },
       customer_email: orderData.customerInfo.email,
       shipping_address_collection: {
-        allowed_countries: ["US", "CA", "GB", "AU"], // Add countries as needed
+        allowed_countries: ["AU", "US", "CA", "GB", "NZ"],
+      },
+      phone_number_collection: {
+        enabled: true,
       },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Stripe session creation error:", error);
     return NextResponse.json(
       { error: "Error creating checkout session" },
       { status: 500 }
