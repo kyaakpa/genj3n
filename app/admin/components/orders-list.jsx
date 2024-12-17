@@ -87,8 +87,73 @@ const OrderList = () => {
   const BillPopup = ({ order, onClose }) => {
     if (!order) return null;
 
+    const [emailAddress, setEmailAddress] = useState(order.customerInfo?.email || "");
+    const [isSending, setIsSending] = useState(false);
+    const [emailStatus, setEmailStatus] = useState(null);
+
     const handlePrint = () => {
       window.print();
+    };
+
+    const handleSendEmail = async (e) => {
+      e.preventDefault();
+      if (!emailAddress) {
+        setEmailStatus({
+          type: 'error',
+          message: 'Please enter an email address'
+        });
+        return;
+      }
+
+      setIsSending(true);
+      setEmailStatus(null);
+
+      try {
+        // Create email content
+        const emailContent = {
+          to: emailAddress,
+          subject: `Invoice #${order.id} from Your Company`,
+          orderId: order.id,
+          customerName: `${order.customerInfo?.firstName} ${order.customerInfo?.lastName}`,
+          orderItems: order.cartItems,
+          totalAmount: order.totalPrice,
+          orderStatus: order.status,
+          orderDate: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        };
+
+        // Send to your API endpoint
+        const response = await fetch('/api/send-invoice', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailContent),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to send email');
+        }
+
+        setEmailStatus({
+          type: 'success',
+          message: 'Invoice sent successfully!'
+        });
+        
+        // Clear email field after successful send
+        setEmailAddress('');
+      } catch (error) {
+        console.error('Error sending email:', error);
+        setEmailStatus({
+          type: 'error',
+          message: 'Failed to send invoice. Please try again.'
+        });
+      } finally {
+        setIsSending(false);
+      }
     };
 
     const formattedDate = new Date().toLocaleDateString('en-US', {
@@ -191,20 +256,70 @@ const OrderList = () => {
             </div>
           </div>
 
-          {/* Footer with Print Button */}
+          {/* Email Form Section */}
           <div className="bg-gray-50 px-8 py-6 print:hidden">
-            <div className="flex justify-end">
+            {emailStatus && (
+              <Alert className={`mb-4 ${emailStatus.type === 'error' ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                <AlertDescription className={emailStatus.type === 'error' ? 'text-red-800' : 'text-green-800'}>
+                  {emailStatus.message}
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <form onSubmit={handleSendEmail} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Send Invoice to Email
+                </label>
+                <div className="mt-1 flex rounded-md shadow-sm">
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter email address"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSending}
+                    className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    {isSending ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Sending...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Send Invoice
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div className="mt-4 flex justify-end">
               <button
                 onClick={handlePrint}
-                className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
               >
-                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
                 Print Invoice
               </button>
             </div>
           </div>
+        
         </div>
 
         {/* Print Styles */}
