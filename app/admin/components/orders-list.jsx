@@ -98,12 +98,17 @@ const OrderList = () => {
       window.print();
     };
 
+    // In your frontend generatePDF function
     const generatePDF = async () => {
-      // Get the bill content div (add an id to the content div)
       const billContent = document.getElementById("bill-content");
+      if (!billContent) {
+        throw new Error("Bill content element not found");
+      }
 
       try {
-        // Remove print:hidden elements temporarily
+        // Log start of PDF generation
+        console.log("Starting PDF generation...");
+
         const printHiddenElements =
           billContent.querySelectorAll(".print\\:hidden");
         printHiddenElements.forEach((el) => (el.style.display = "none"));
@@ -111,14 +116,18 @@ const OrderList = () => {
         const canvas = await html2canvas(billContent, {
           scale: 2,
           useCORS: true,
-          logging: false,
+          logging: true,
+          onclone: (doc) => {
+            console.log("Document cloned for PDF generation");
+          },
         });
 
-        // Restore print:hidden elements
         printHiddenElements.forEach((el) => (el.style.display = ""));
 
+        console.log("Canvas generated, creating PDF...");
+
         const pdf = new jsPDF("p", "mm", "a4");
-        const imgWidth = 210; // A4 width in mm
+        const imgWidth = 210;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
         pdf.addImage(
@@ -129,7 +138,18 @@ const OrderList = () => {
           imgWidth,
           imgHeight
         );
-        return pdf.output("datauristring").split(",")[1]; // Returns base64 string
+        const base64Data = pdf.output("datauristring").split(",")[1];
+
+        // Check PDF size
+        const pdfSize = base64Data.length * 0.75; // Convert base64 length to approximate byte size
+        console.log(`PDF size: ${(pdfSize / 1024 / 1024).toFixed(2)}MB`);
+
+        if (pdfSize > 10 * 1024 * 1024) {
+          // 10MB limit
+          throw new Error("Generated PDF is too large");
+        }
+
+        return base64Data;
       } catch (error) {
         console.error("Error generating PDF:", error);
         throw error;
@@ -160,7 +180,13 @@ const OrderList = () => {
           customerName: `${order.customerInfo?.firstName} ${order.customerInfo?.lastName}`,
           total: order.totalPrice,
           pdfData: pdfData,
+          note: order.note, // Add the note if it exists
         };
+
+        console.log("Sending email content:", {
+          ...emailContent,
+          pdfData: "BASE64_DATA", // Log everything except the PDF data
+        });
 
         const response = await fetch("/api/send-invoice", {
           method: "POST",
@@ -170,9 +196,20 @@ const OrderList = () => {
           body: JSON.stringify(emailContent),
         });
 
+        // Log raw response for debugging
+        const rawResponse = await response.text();
+        console.log("Raw response:", rawResponse);
+
+        // Parse response
+        let jsonResponse;
+        try {
+          jsonResponse = JSON.parse(rawResponse);
+        } catch (parseError) {
+          throw new Error(`Invalid JSON response: ${rawResponse}`);
+        }
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to send email");
+          throw new Error(jsonResponse.error || "Failed to send email");
         }
 
         setEmailStatus({
