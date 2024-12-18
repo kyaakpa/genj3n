@@ -304,6 +304,14 @@ const OrderList = () => {
                 ))}
               </tbody>
             </table>
+            {order.note && (
+              <div className="mt-8 border-t pt-4">
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  Order Note
+                </h3>
+                <p className="text-gray-600 text-sm">{order.note}</p>
+              </div>
+            )}
 
             {/* Summary */}
             <div className="mt-8 border-t pt-8">
