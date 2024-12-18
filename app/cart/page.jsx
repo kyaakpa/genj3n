@@ -1,18 +1,13 @@
 "use client";
 
-import { prints } from "@/public/dummyData";
 import React, { useContext, useState } from "react";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { Context } from "../context/page";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase/config";
-import { FaCross } from "react-icons/fa";
-import { RxCross2 } from "react-icons/rx";
-import CheckoutModal from "../admin/components/checkoutModal";
+
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-  const { cartItems } = useContext(Context);
+  const { cartItems,setOrderNote  } = useContext(Context);
   const {
     handleAddToCart,
     handleRemoveFromCart,
@@ -22,15 +17,7 @@ const Page = () => {
 
   const [errorText, setErrorText] = useState("");
   const [errorTextIndex, setErrorTextIndex] = useState(0);
-
-  const [order, setOrder] = useState({
-    items: cartItems,
-    customerName: "",
-    status: "Pending",
-    payment: "Unpaid",
-    totalPrice: 0,
-    createdAt: new Date(),
-  });
+  const [note, setNote] = useState("");
 
   const router = useRouter();
 
@@ -67,29 +54,10 @@ const Page = () => {
     return total;
   };
 
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setOrder({ ...order, [name]: value });
-  };
 
-  const handleOrderSubmit = async () => {
-    try {
-      await addDoc(collection(db, "orders"), {
-        id: Math.floor(Math.random() * 1000),
-        customerName: order.customerName,
-        status: "Pending",
-        payment: "Unpaid",
-        totalPrice: calculateSubtotal(),
-        createdAt: new Date(),
-      });
-
-      console.log("Document successfully written!");
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  };
 
   const handleCheckout = async () => {
+    setOrderNote(note);
     router.push("checkout");
   };
 
@@ -174,12 +142,13 @@ const Page = () => {
         </div>
         <div className="flex flex-col w-1/2 items-center justify-center">
           <p className="text-xs text-gray-600">
-            {" "}
             ADD A NOTE TO YOUR ORDER (optional)
           </p>
           <textarea
             className="w-1/2 border border-gray-400 active:outline-none focus:outline-none p-2 mt-2 text-sm"
             rows={4}
+            value={note}
+            onChange={(e)=> setNote(e.target.value)}
           />
         </div>
         <button

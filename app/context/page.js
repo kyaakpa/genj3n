@@ -11,6 +11,7 @@ function GlobalState({ children }) {
       return [];
     }
   });
+  const [orderNote, setOrderNote] = useState("");
 
   const clearCart = () => {
     setCartItems([]);
@@ -142,6 +143,8 @@ function GlobalState({ children }) {
     <Context.Provider
       value={{
         cartItems,
+        orderNote,
+        setOrderNote,
         handleAddToCart,
         handleRemoveFromCart,
         handleDeleteFromCart,

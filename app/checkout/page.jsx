@@ -12,7 +12,7 @@ const CheckoutPage = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { cartItems } = useContext(Context);
+  const { cartItems, orderNote } = useContext(Context);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const calculateItemTotal = (item) => {
@@ -40,6 +40,7 @@ const CheckoutPage = () => {
           email: data.email,
           phone: data.phone,
         },
+        note: orderNote,
         status: "Pending",
         totalPrice: calculateSubtotal(),
         createdAt: new Date().toISOString(),
