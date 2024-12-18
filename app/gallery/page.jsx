@@ -78,28 +78,31 @@ const Page = () => {
         closeModal={() => handleModal(null)}
         item={paintings.find((item) => item.id === modalItem)}
       />
-      <div className="flex justify-between items-center w-full my-4 px-10">
-        <div></div>
-        <div className="flex items-center text-sm">
-          <button
-            className="mr-2 px-4 py-2 bg-black text-white cursor-pointer"
-            onClick={handlePrevPage}
-            disabled={currentPage === 1 || isLoading}
-          >
-            Prev
-          </button>
-          <span className="mx-2">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="ml-2 px-4 py-2 bg-black text-white cursor-pointer"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages || isLoading}
-          >
-            Next
-          </button>
+      {
+        paintings.length > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center w-full my-6 px-2 sm:px-4 md:px-6 lg:px-10 gap-4">
+          <div className="order-2 sm:order-1 text-xs sm:text-sm text-gray-600">
+            Showing page {currentPage} of {totalPages}
+          </div>
+          <div className="flex items-center order-1 sm:order-2 w-full sm:w-auto justify-center">
+            <button
+              className="mr-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1 || isLoading}
+            >
+              Previous
+            </button>
+            <button
+              className="ml-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || isLoading}
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+        )
+      }
     </div>
   );
 };
