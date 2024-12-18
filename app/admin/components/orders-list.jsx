@@ -98,67 +98,43 @@ const OrderList = () => {
       window.print();
     };
 
-    // In your frontend generatePDF function
     const generatePDF = async () => {
+      // Get the bill content div (add an id to the content div)
       const billContent = document.getElementById("bill-content");
-      if (!billContent) {
-        throw new Error("Bill content element not found");
-      }
 
       try {
-        console.log("Starting PDF generation...");
-
+        // Remove print:hidden elements temporarily
         const printHiddenElements =
           billContent.querySelectorAll(".print\\:hidden");
         printHiddenElements.forEach((el) => (el.style.display = "none"));
 
-        // Reduce quality and scale to decrease file size
         const canvas = await html2canvas(billContent, {
-          scale: 1, // Reduced from 2 to 1
+          scale: 2,
           useCORS: true,
-          logging: true,
-          imageTimeout: 0,
-          removeContainer: true,
-          backgroundColor: null,
-          // Optimize canvas settings
-          windowWidth: billContent.scrollWidth,
-          windowHeight: billContent.scrollHeight,
+          logging: false,
         });
 
+        // Restore print:hidden elements
         printHiddenElements.forEach((el) => (el.style.display = ""));
-
-        console.log("Canvas generated, creating PDF...");
 
         const pdf = new jsPDF({
           orientation: "p",
           unit: "mm",
           format: "a4",
-          compress: true, // Enable compression
+          compress: true,
         });
-
-        const imgWidth = 210;
+        const imgWidth = 210; // A4 width in mm
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        // Convert canvas to image with reduced quality
-        const imgData = canvas.toDataURL("image/jpeg", 0.7); // Reduced quality JPEG
-
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
-
-        // Use base64 with compression
-        const base64Data = pdf.output("datauristring").split(",")[1];
-
-        // Check size before sending
-        const pdfSize = base64Data.length * 0.75; // Convert base64 length to bytes
-        console.log(`PDF size: ${(pdfSize / 1024 / 1024).toFixed(2)}MB`);
-
-        if (pdfSize > 4 * 1024 * 1024) {
-          // 4MB limit to be safe
-          throw new Error(
-            "Generated PDF is too large. Please try with fewer items or contact support."
-          );
-        }
-
-        return base64Data;
+        pdf.addImage(
+          canvas.toDataURL("image/png"),
+          "PNG",
+          0,
+          0,
+          imgWidth,
+          imgHeight
+        );
+        return pdf.output("datauristring").split(",")[1]; // Returns base64 string
       } catch (error) {
         console.error("Error generating PDF:", error);
         throw error;
