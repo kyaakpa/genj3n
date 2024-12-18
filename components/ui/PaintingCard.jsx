@@ -13,7 +13,7 @@ const PaintingCard = ({ item, handleModal }) => {
   return (
     <div
       key={item.id}
-      className="relative h-[600px] hover:cursor-pointer p-2"
+      className="relative w-full aspect-[4/5] max-w-[450px] mx-auto hover:cursor-pointer p-2"
       onMouseEnter={() => handleHover(item.id)}
       onMouseLeave={() => handleHover(null)}
       onClick={() => {
@@ -21,22 +21,24 @@ const PaintingCard = ({ item, handleModal }) => {
       }}
     >
       {item.status === "Sold" && (
-        <div className="absolute top-0 left-0 bg-black text-white py-1 px-4 text-sm z-20">
+        <div className="absolute top-0 left-0 bg-black text-white py-1 px-3 text-xs sm:text-sm z-20">
           SOLD
         </div>
       )}
-      <div className="h-[500px] w-[450px] bg-blue-200 relative">
+      <div className="relative w-full aspect-square bg-blue-200">
         <Image
           src={item.imageUrl}
           alt={item.name}
-          className="h-full w-full object-cover"
-          width={300}
-          height={300}
+          fill
+          sizes="(max-width: 640px) 100vw, 
+                 (max-width: 768px) 50vw,
+                 33vw"
+          className="object-cover"
           loading="lazy"
           quality={75}
         />
         <div
-          className={`flex items-center justify-center absolute bottom-0 left-0 w-full  h-[50px] text-sm bg-[#E3DED5] transition-opacity duration-500 ${
+          className={`flex items-center justify-center absolute bottom-0 left-0 w-full h-[40px] sm:h-[50px] text-xs sm:text-sm bg-[#E3DED5] transition-opacity duration-500 ${
             isHovered ? "opacity-80" : "opacity-0"
           }`}
           onClick={(e) => {
@@ -46,14 +48,19 @@ const PaintingCard = ({ item, handleModal }) => {
         >
           Quick View
         </div>
-        <div className="flex flex-col items-center p-4 gap-2 text-sm">
-          <h1 className="font-semibold text-base">{item.name}</h1>
-          {item.status === "Sold" ? (
-            <p className="text-[#c5a365] font-semibold">Out of Stock</p>
-          ) : (
-            <p className="text-gray-600 font-semibold">$ {item.price}</p>
-          )}
-        </div>
+      </div>
+
+      <div className="flex flex-col items-center p-2 sm:p-4 gap-1 sm:gap-2 text-sm">
+        <h1 className="font-semibold text-sm sm:text-base">{item.name}</h1>
+        {item.status === "Sold" ? (
+          <p className="text-[#c5a365] font-semibold text-xs sm:text-sm">
+            Out of Stock
+          </p>
+        ) : (
+          <p className="text-gray-600 font-semibold text-xs sm:text-sm">
+            $ {item.price}
+          </p>
+        )}
       </div>
     </div>
   );
