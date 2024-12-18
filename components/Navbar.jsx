@@ -104,7 +104,7 @@ const Navbar = () => {
             transition: "max-height 0.5s ease-in-out",
           }}
         >
-          <ul className="mt-16 lg:hidden">
+          <ul className="mt-16 pr-2 lg:hidden">
             {navbarItems.map((item) => (
               <li
                 key={typeof item.name === "string" ? item.name : item.href}

@@ -16,7 +16,7 @@ async function sendEmail(data) {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: data.email,
+      to: process.env.EMAIL_USER,
       subject: `New Contact Form Submission from ${data.name}`,
       html: `
         <p><strong>Name:</strong> ${data.name}</p>

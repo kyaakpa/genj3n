@@ -7,7 +7,7 @@ import { Context } from "../context/page";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-  const { cartItems,setOrderNote  } = useContext(Context);
+  const { cartItems, setOrderNote } = useContext(Context);
   const {
     handleAddToCart,
     handleRemoveFromCart,
@@ -53,8 +53,6 @@ const Page = () => {
     });
     return total;
   };
-
-
 
   const handleCheckout = async () => {
     setOrderNote(note);
@@ -148,11 +146,11 @@ const Page = () => {
             className="w-1/2 border border-gray-400 active:outline-none focus:outline-none p-2 mt-2 text-sm"
             rows={4}
             value={note}
-            onChange={(e)=> setNote(e.target.value)}
+            onChange={(e) => setNote(e.target.value)}
           />
         </div>
         <button
-          className="bg-black text-white p-4 active:outline-none text-sm mt-6"
+          className="bg-black text-white p-4 active:outline-none text-sm mt-6 mb-6"
           onClick={handleCheckout}
         >
           Proceed to Checkout

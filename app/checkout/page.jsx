@@ -30,7 +30,7 @@ const CheckoutPage = () => {
   const handleOrderSubmit = async (data) => {
     try {
       setIsProcessing(true);
-  
+
       const orderData = {
         id: Math.floor(Math.random() * 1000),
         cartItems: cartItems,
@@ -45,29 +45,29 @@ const CheckoutPage = () => {
         totalPrice: calculateSubtotal(),
         createdAt: new Date().toISOString(),
       };
-  
+
       localStorage.setItem("pendingOrder", JSON.stringify(orderData));
-  
+
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderData }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
+        throw new Error(errorData.error || "Failed to create checkout session");
       }
 
       const { url, error } = await response.json();
-  
+
       if (error) {
         toast.error("Something went wrong. Please try again.", {
           position: "bottom-right",
         });
         return;
       }
-  
+
       window.location.href = url;
     } catch (e) {
       console.error("Error:", e);
@@ -82,7 +82,7 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen w-full pt-14 px-28">
       <h2 className="text-2xl font-semibold mb-8">Checkout</h2>
-      
+
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Order Summary Section */}
         <div className="lg:w-2/3">
@@ -96,7 +96,7 @@ const CheckoutPage = () => {
                       src={item.imageUrl}
                       alt={item.name}
                       fill
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: "cover" }}
                     />
                   </div>
                   <div className="flex-grow flex justify-between items-center">
@@ -115,7 +115,7 @@ const CheckoutPage = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-4 border-t">
+            <div className="mt-4 pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total</span>
                 <span className="font-semibold">${calculateSubtotal()}</span>
@@ -143,12 +143,14 @@ const CheckoutPage = () => {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <input
                   className="w-full border p-2"
                   placeholder="Last Name"
-                  {...register("lastName", { required: "Last Name is required" })}
+                  {...register("lastName", {
+                    required: "Last Name is required",
+                  })}
                 />
                 {errors.lastName && (
                   <p className="text-red-500 text-xs mt-1">
@@ -156,7 +158,7 @@ const CheckoutPage = () => {
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <input
                   className="w-full border p-2"
@@ -170,10 +172,12 @@ const CheckoutPage = () => {
                   })}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
-              
+
               <div>
                 <input
                   className="w-full border p-2"
@@ -187,7 +191,9 @@ const CheckoutPage = () => {
                   })}
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.phone.message}
+                  </p>
                 )}
               </div>
             </div>

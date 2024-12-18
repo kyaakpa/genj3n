@@ -68,7 +68,7 @@ const ContactPage = () => {
             href="mailto:phurpalama@gmail.com"
             className="underline text-[#c5a365]"
           >
-            phurpalama@gmail.com
+            bphurpa2@gmail.com
           </a>{" "}
           and I will get back to you as soon as possible.
         </p>
