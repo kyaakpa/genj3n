@@ -56,11 +56,9 @@ const Page = () => {
 
   const handleDelete = async () => {
     try {
-      await deleteDoc(doc(db, "paintings", id));
-      toast.success("Painting deleted successfully", {
-        position: "bottom-right",
-      });
-      router.push("/admin/paintings");
+      await deleteDoc(doc(db, "gallery", id));
+      console.log("deleted successfully.");
+      router.push("/admin/gallery");
     } catch (e) {
       console.error("Error removing document: ", e);
     }
@@ -68,7 +66,7 @@ const Page = () => {
 
   const handleSave = async () => {
     try {
-      await setDoc(doc(db, "paintings", id), {
+      await setDoc(doc(db, "gallery", id), {
         ...painting,
       });
       toast.success("Painting updated successfully", {
@@ -83,7 +81,7 @@ const Page = () => {
         imageUrl: "",
       });
       setProductImage(null);
-      router.push("/admin/paintings");
+      router.push("/admin/gallery");
     } catch (e) {
       console.error("Error adding document: ", e);
     }
