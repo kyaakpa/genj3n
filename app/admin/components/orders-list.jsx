@@ -545,9 +545,6 @@ const OrderList = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Filters
-            </button>
           </div>
 
           {filteredOrders.length === 0 ? (
@@ -598,14 +595,6 @@ const OrderList = () => {
                           ${order.totalPrice?.toFixed(2) ?? "0.00"}
                         </td>
                         <td className="py-4 px-4 space-x-2">
-                          <button
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() =>
-                              router.push(`/admin/orders/${order.docId}/edit`)
-                            }
-                          >
-                            Edit
-                          </button>
                           <button
                             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
                             onClick={() => handleDelete(order.docId)}
