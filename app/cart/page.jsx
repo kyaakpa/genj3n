@@ -61,6 +61,7 @@ const Page = () => {
 
   return (
     <div className="h-auto w-full  pt-14 px-28">
+      <title>Cart</title>
       <div className="flex flex-col items-center w-full gap-4">
         <h1 className="text-2xl pb-12">Shopping Cart</h1>
         <div className="flex flex-row w-1/2 justify-between font-semibold text-sm pb-2 border-b-2">
