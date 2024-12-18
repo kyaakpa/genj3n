@@ -15,8 +15,8 @@ const transporter = nodemailer.createTransport({
 async function sendEmail(data) {
   try {
     const mailOptions = {
-      from: data.email,
-      to: process.env.RECIPIENT_EMAIL,
+      from: process.env.EMAIL_USER,
+      to: data.email,
       subject: `New Contact Form Submission from ${data.name}`,
       html: `
         <p><strong>Name:</strong> ${data.name}</p>
