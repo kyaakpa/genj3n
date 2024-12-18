@@ -77,7 +77,7 @@ const Navbar = () => {
           <img
             src="./logo1.png"
             alt="genj3n logo"
-            className={`w-20 transition-all duration-300 ease-in-out ${
+            className={`w-16 transition-all duration-300 ease-in-out ${
               mounted && scrolled ? "w-16" : ""
             }`}
           />
@@ -104,7 +104,7 @@ const Navbar = () => {
             transition: "max-height 0.5s ease-in-out",
           }}
         >
-          <ul className="mt-16 pr-2 lg:hidden">
+          <ul className="mt-4 pr-2 lg:hidden">
             {navbarItems.map((item) => (
               <li
                 key={typeof item.name === "string" ? item.name : item.href}
