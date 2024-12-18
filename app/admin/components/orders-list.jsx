@@ -26,7 +26,6 @@ const OrderList = () => {
         ...doc.data(),
       }));
       setOrders(data);
-      console.log(data);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
       console.error("Error fetching orders:", err);
