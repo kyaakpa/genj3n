@@ -15,6 +15,9 @@ const OrderList = () => {
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const router = useRouter();
+  const [totalPages, setTotalPages] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9
 
   const getOrders = async () => {
     try {
@@ -25,12 +28,30 @@ const OrderList = () => {
         docId: doc.id,
         ...doc.data(),
       }));
-      setOrders(data);
+      console.log(data);
+      const totalOrders = data.length;
+      setTotalPages(Math.ceil(totalOrders / itemsPerPage));
+      const startIndex = (currentPage - 1) *itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedOrders = data.slice(startIndex, endIndex);
+      setOrders(paginatedOrders);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
       console.error("Error fetching orders:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -61,7 +82,7 @@ const OrderList = () => {
 
   useEffect(() => {
     getOrders();
-  }, []);
+  }, [currentPage]);
 
   const filteredOrders = orders.filter((order) => {
     if (!order) return false;
@@ -83,18 +104,6 @@ const OrderList = () => {
       ? { textColor: "text-[#B79153]", bgColor: "bg-[#FFECD0]" }
       : { textColor: "text-[#459D4F]", bgColor: "bg-[#D9FFDD]" };
   };
-
-  if (loading) {
-    return (
-      <div className="h-auto w-full pt-6 px-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-10 bg-gray-200 rounded w-full mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded w-full"></div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -120,8 +129,12 @@ const OrderList = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
-          {filteredOrders.length === 0 ? (
+{loading ? (
+            <div className="flex justify-center items-center h-64">
+              <span className="text-gray-500">Loading...</span>
+            </div>
+          ) :
+          filteredOrders.length === 0 ? (
             <div className="w-full text-center py-8 text-gray-500">
               No orders found matching your search criteria.
             </div>
@@ -202,7 +215,33 @@ const OrderList = () => {
           onClose={() => setSelectedOrder(null)}
         />
       )}
-    </div>
+    {
+      orders.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center w-full my-4 sm:my-6 px-2 sm:px-4 gap-4">
+            <div className="order-2 sm:order-1 text-xs sm:text-sm text-gray-600 text-center sm:text-left">
+              Showing page {currentPage} of {totalPages}
+            </div>
+
+            <div className="flex items-center order-1 sm:order-2 w-full sm:w-auto justify-center gap-2 sm:gap-4">
+              <button
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+                onClick={handlePrevPage}
+                disabled={currentPage === 1 || loading}
+              >
+                Previous
+              </button>
+              <button
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages || loading}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+      )
+    }
+    </div>  
   );
 };
 
