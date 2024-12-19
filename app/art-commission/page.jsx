@@ -23,8 +23,7 @@ const CommissionPage = () => {
 
   const commissionTypes = [
     "Digital Art",
-    "Traditional Art",
-    "Portrait",
+    "Digital Portrait",
     "Sketch",
     "Other",
   ];
@@ -212,17 +211,17 @@ const CommissionPage = () => {
   };
 
   const ImagePreview = ({ image, index }) => (
-    <div className="relative group bg-gray-50 p-2 rounded-lg border border-gray-200">
+    <div className="relative group bg-gray-50 p-2 border border-gray-200">
       <div className="relative pt-[75%]">
         <img
           src={image.preview}
           alt={`Reference ${index + 1}`}
-          className="absolute inset-0 w-full h-full object-cover rounded-md"
+          className="absolute inset-0 w-full h-full object-cover "
         />
         <button
           type="button"
           onClick={() => removeImage(index)}
-          className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5  shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <FiX className="w-4 h-4" />
         </button>
@@ -242,7 +241,7 @@ const CommissionPage = () => {
   return (
     <div className="min-h-screen ">
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg p-6 md:p-8">
+        <div className="max-w-2xl mx-auto bg-white  p-6 md:p-8">
           <h1 className="text-3xl font-semibold text-center mb-2">
             Art Commission Request
           </h1>
@@ -267,7 +266,7 @@ const CommissionPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -284,7 +283,7 @@ const CommissionPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -304,12 +303,18 @@ const CommissionPage = () => {
                   name="commissionType"
                   value={formData.commissionType}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border rounded-none border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{
+                    WebkitAppearance: "none",
+                    MozAppearance: "none",
+                  }}
                   required
                 >
-                  <option value="">Select Type</option>
+                  <option value="" className="rounded-none">
+                    Select Type
+                  </option>
                   {commissionTypes.map((type) => (
-                    <option key={type} value={type}>
+                    <option key={type} value={type} className="rounded-none">
                       {type}
                     </option>
                   ))}
@@ -328,7 +333,8 @@ const CommissionPage = () => {
                   name="budget"
                   value={formData.budget}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  min={100}
                   required
                 />
               </div>
@@ -347,7 +353,7 @@ const CommissionPage = () => {
                 name="deadline"
                 value={formData.deadline}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -364,7 +370,7 @@ const CommissionPage = () => {
                 value={formData.message}
                 onChange={handleChange}
                 rows={5}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
                 placeholder="Please describe your commission request in detail..."
               />
@@ -376,7 +382,7 @@ const CommissionPage = () => {
                 Reference Images
               </label>
               <div
-                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+                className={`border-2 border-dashed p-6 transition-colors ${
                   isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
                 }`}
                 onDragOver={handleDragOver}
@@ -431,7 +437,7 @@ const CommissionPage = () => {
             <button
               type="submit"
               disabled={status === "sending"}
-              className={`w-full py-3 px-4 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors
+              className={`w-full py-3 px-4 text-white bg-black hover:bg-white border-2 border-black hover:text-black transition-colors
                 ${status === "sending" ? "opacity-50 cursor-not-allowed" : ""}
               `}
             >
