@@ -1,48 +1,68 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
+// utils/invoiceUtils.js
 export const generatePDF = async (elementId) => {
-    const element = document.getElementById(elementId);
-    if (!element) throw new Error("Element not found");
+    return new Promise((resolve, reject) => {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        reject(new Error("Element not found"));
+        return;
+      }
   
-    try {
-      // Hide elements marked for print hiding
-      const printHiddenElements = element.querySelectorAll(".print\\:hidden");
-      printHiddenElements.forEach((el) => (el.style.display = "none"));
-  
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-  
-      // Restore hidden elements
-      printHiddenElements.forEach((el) => (el.style.display = ""));
-  
-      const pdf = new jsPDF({
-        orientation: "p",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
+      // Force the element to be visible temporarily
+      const originalDisplay = element.style.display;
+      element.style.display = 'block';
       
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Wait for browser to render
+      requestAnimationFrame(async () => {
+        try {
+          const canvas = await html2canvas(element, {
+            scale: 1, // Set scale to 1 for consistent output
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            windowWidth: 794, // A4 width in pixels at 96 DPI
+            logging: false
+          });
   
-      pdf.addImage(
-        canvas.toDataURL("image/png"),
-        "PNG",
-        0,
-        0,
-        imgWidth,
-        imgHeight
-      );
-      
-      return pdf.output("datauristring").split(",")[1];
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      throw error;
-    }
+          // Initialize PDF with A4 size
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'pt', // Use points for more precise sizing
+            format: 'a4'
+          });
+  
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+  
+          // Calculate scaling to fit content to A4
+          const aspectRatio = canvas.width / canvas.height;
+          let imgWidth = pdfWidth;
+          let imgHeight = pdfWidth / aspectRatio;
+  
+          // If height is too large, scale based on height instead
+          if (imgHeight > pdfHeight) {
+            imgHeight = pdfHeight;
+            imgWidth = pdfHeight * aspectRatio;
+          }
+  
+          // Convert canvas to JPEG data
+          const imgData = canvas.toDataURL('image/jpeg', 1.0);
+  
+          // Add image to PDF
+          pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+  
+          // Restore original display style
+          element.style.display = originalDisplay;
+  
+          resolve(pdf.output('datauristring').split(',')[1]);
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          element.style.display = originalDisplay;
+          reject(error);
+        }
+      });
+    });
   };
   
 export const sendInvoiceEmail = async (emailData) => {
