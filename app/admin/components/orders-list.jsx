@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import BillPopup from "./invoiceActions";
 
 const OrderList = () => {
-  const [orders, setOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState([]); // Store all orders
+  const [displayedOrders, setDisplayedOrders] = useState([]); // Store paginated orders
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,30 +38,8 @@ const OrderList = () => {
         new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      // Filter by date range if set
-      const filteredByDate = sortedData.filter(order => {
-        if (!dateRange.startDate && !dateRange.endDate) return true;
-        
-        const orderDate = new Date(order.createdAt);
-        const start = dateRange.startDate ? new Date(dateRange.startDate) : null;
-        const end = dateRange.endDate ? new Date(dateRange.endDate) : null;
-        
-        if (start && end) {
-          return orderDate >= start && orderDate <= end;
-        } else if (start) {
-          return orderDate >= start;
-        } else if (end) {
-          return orderDate <= end;
-        }
-        return true;
-      });
-
-      const totalOrders = filteredByDate.length;
-      setTotalPages(Math.ceil(totalOrders / itemsPerPage));
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedOrders = filteredByDate.slice(startIndex, endIndex);
-      setOrders(paginatedOrders);
+      setAllOrders(sortedData);
+      updateDisplayedOrders(sortedData, dateRange, currentPage, searchTerm);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
       console.error("Error fetching orders:", err);
@@ -69,9 +48,58 @@ const OrderList = () => {
     }
   };
 
+  const updateDisplayedOrders = (orders, dateRange, page, search) => {
+    // First apply search if there is any
+    let filtered = orders;
+    if (search) {
+      filtered = orders.filter((order) => {
+        if (!order) return false;
+        const customerName = `${order.customerInfo?.firstName ?? ""} ${
+          order.customerInfo?.lastName ?? ""
+        }`.toLowerCase();
+        const searchValue = search.toLowerCase();
+        return (
+          customerName.includes(searchValue) ||
+          order.docId?.toString().toLowerCase().includes(searchValue)
+        );
+      });
+    }
+
+    // Then apply date filter
+    filtered = filtered.filter(order => {
+      if (!dateRange.startDate && !dateRange.endDate) return true;
+      
+      const orderDate = new Date(order.createdAt);
+      const start = dateRange.startDate ? new Date(dateRange.startDate) : null;
+      const end = dateRange.endDate ? new Date(dateRange.endDate) : null;
+      
+      if (start && end) {
+        return orderDate >= start && orderDate <= end;
+      } else if (start) {
+        return orderDate >= start;
+      } else if (end) {
+        return orderDate <= end;
+      }
+      return true;
+    });
+
+    // Calculate total pages based on filtered results
+    const totalFilteredOrders = filtered.length;
+    setTotalPages(Math.ceil(totalFilteredOrders / itemsPerPage));
+
+    // Apply pagination
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setDisplayedOrders(filtered.slice(startIndex, endIndex));
+  };
+
   useEffect(() => {
     getOrders();
-  }, [currentPage, dateRange]);
+  }, []);
+
+  useEffect(() => {
+    updateDisplayedOrders(allOrders, dateRange, currentPage, searchTerm);
+  }, [dateRange, currentPage, searchTerm]);
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -97,9 +125,12 @@ const OrderList = () => {
         setDeletingOrderId(orderId);
         const orderRef = doc(db, "orders", orderId);
         await deleteDoc(orderRef);
-        setOrders((prevOrders) =>
-          prevOrders.filter((order) => order.docId !== orderId)
-        );
+        
+        // Update both all orders and displayed orders
+        const updatedAllOrders = allOrders.filter(order => order.docId !== orderId);
+        setAllOrders(updatedAllOrders);
+        updateDisplayedOrders(updatedAllOrders, dateRange, currentPage, searchTerm);
+        
         alert("Order deleted successfully");
       } catch (error) {
         console.error("Error removing document:", error);
@@ -119,20 +150,19 @@ const OrderList = () => {
     setCurrentPage(1); // Reset to first page when changing date range
   };
 
-  const filteredOrders = orders.filter((order) => {
-    if (!order) return false;
+  const handleAllTime = () => {
+    setDateRange({
+      startDate: '',
+      endDate: ''
+    });
+    setCurrentPage(1);
+  };
 
-    const customerName = `${order.customerInfo?.firstName ?? ""} ${
-      order.customerInfo?.lastName ?? ""
-    }`.toLowerCase();
 
-    const searchValue = searchTerm.toLowerCase();
-
-    return (
-      customerName.includes(searchValue) ||
-      order.docId?.toString().toLowerCase().includes(searchValue)
-    );
-  });
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   const getStatusStyle = (status) => {
     return status === "Pending"
@@ -162,10 +192,10 @@ const OrderList = () => {
               type="text"
               placeholder="Search by customer name or order ID"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
             
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row gap-4 items-center">
               <input
                 type="date"
                 name="startDate"
@@ -180,6 +210,12 @@ const OrderList = () => {
                 onChange={handleDateRangeChange}
                 className="h-10 pl-2 border-2 border-gray-300 rounded-md"
               />
+              <button
+                onClick={handleAllTime}
+                className="h-10 px-4 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                All Time
+              </button>
             </div>
           </div>
 
@@ -187,7 +223,7 @@ const OrderList = () => {
             <div className="flex justify-center items-center h-64">
               <span className="text-gray-500">Loading...</span>
             </div>
-          ) : filteredOrders.length === 0 ? (
+          ) : displayedOrders.length === 0 ? (
             <div className="w-full text-center py-8 text-gray-500">
               No orders found matching your search criteria.
             </div>
@@ -205,7 +241,7 @@ const OrderList = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order) => {
+                  {displayedOrders.map((order) => {
                     if (!order || !order.docId) return null;
 
                     const { textColor, bgColor } = getStatusStyle(order.status);
@@ -266,7 +302,7 @@ const OrderList = () => {
         />
       )}
 
-      {orders.length > 0 && (
+      {displayedOrders.length > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center w-full my-4 sm:my-6 px-2 sm:px-4 gap-4">
           <div className="order-2 sm:order-1 text-xs sm:text-sm text-gray-600 text-center sm:text-left">
             Showing page {currentPage} of {totalPages}
