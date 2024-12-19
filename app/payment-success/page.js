@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, Suspense } from "react";
+import { useContext, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   doc,
@@ -31,60 +31,53 @@ const SuccessContent = ({ router }) => (
   </div>
 );
 
-// Loading component
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center">
     <span className="text-gray-500">Loading...</span>
   </div>
 );
 
-// Main component wrapped with error boundary
 const PaymentSuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
   const { clearCart } = useContext(Context);
-
-
+  const processedRef = useRef(false);
 
   useEffect(() => {
-    const updateOrderAndStock = async () => {
-      if (!orderId) {
-        console.error("No order ID found");
+    const updateOrderAndSendInvoice = async () => {
+      if (!orderId || processedRef.current) {
         return;
       }
-  
+
       try {
         const pendingOrderString = localStorage.getItem("pendingOrder");
         if (!pendingOrderString) {
-          console.error("Order data not found");
           return;
         }
-  
+
+        processedRef.current = true; // Mark as processed immediately
         const pendingOrder = JSON.parse(pendingOrderString);
-  
+
         await runTransaction(db, async (transaction) => {
           // STEP 1: Perform all reads first
-          // Check if order exists
           const ordersRef = collection(db, "orders");
           const q = query(ordersRef, where("id", "==", parseInt(orderId)));
           const querySnapshot = await getDocs(q);
-  
+          
           if (!querySnapshot.empty) {
-            console.log("Order already processed");
             return;
           }
-  
-          // Read all painting documents
+
           const paintingReads = await Promise.all(
             pendingOrder.cartItems.map(async (item) => {
               const paintingRef = doc(db, "paintings", item.id);
               const paintingDoc = await transaction.get(paintingRef);
-  
+
               if (!paintingDoc.exists()) {
                 throw new Error(`Painting ${item.id} not found`);
               }
-  
+
               return {
                 ref: paintingRef,
                 currentQuantity: parseInt(paintingDoc.data().totalQuantity),
@@ -93,17 +86,15 @@ const PaymentSuccessContent = () => {
               };
             })
           );
-  
-          // Verify stock levels
+
           paintingReads.forEach(({ currentQuantity, orderedQuantity, item }) => {
             const newQuantity = currentQuantity - orderedQuantity;
             if (newQuantity < 0) {
               throw new Error(`Insufficient stock for painting ${item.name}`);
             }
           });
-  
-          // STEP 2: Perform all writes after reads are complete
-          // Create new order
+
+          // STEP 2: Perform all writes
           const newOrderRef = doc(collection(db, "orders"));
           transaction.set(newOrderRef, {
             ...pendingOrder,
@@ -111,8 +102,7 @@ const PaymentSuccessContent = () => {
             payment: "Paid",
             updatedAt: new Date().toISOString(),
           });
-  
-          // Update all painting quantities
+
           paintingReads.forEach(({ ref, currentQuantity, orderedQuantity }) => {
             const newQuantity = currentQuantity - orderedQuantity;
             transaction.update(ref, {
@@ -121,25 +111,50 @@ const PaymentSuccessContent = () => {
             });
           });
         });
-  
+
+        // Send email confirmation after successful transaction
+        try {
+          const emailContent = {
+            email: pendingOrder.customerInfo.email,
+            orderId: pendingOrder.id,
+            customerName: `${pendingOrder.customerInfo.firstName} ${pendingOrder.customerInfo.lastName}`,
+            total: pendingOrder.totalPrice,
+            items: pendingOrder.cartItems,
+            note: pendingOrder.note
+          };
+
+          const response = await fetch("/api/send-order-confirmation", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(emailContent),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to send order confirmation');
+          }
+        } catch (emailError) {
+          console.error("Error sending order confirmation:", emailError);
+        }
+
         console.log("Successfully updated order status and stock quantities");
         clearCart();
         localStorage.removeItem("pendingOrder");
         localStorage.removeItem("cartItems");
+        
       } catch (error) {
         console.error("Error updating order status:", error);
-        // Keep the pending order in localStorage in case of error
-        // Consider adding retry logic or user notification here
+        processedRef.current = false; // Reset on error to allow retry
       }
     };
-  
-    updateOrderAndStock();
-  }, [orderId]);
+
+    updateOrderAndSendInvoice();
+  }, [orderId, clearCart]);
 
   return <SuccessContent router={router} />;
 };
 
-// Main export with Suspense boundary
 export default function PaymentSuccess() {
   return (
     <Suspense fallback={<LoadingSpinner />}>
