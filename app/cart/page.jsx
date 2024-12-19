@@ -60,35 +60,30 @@ const Page = () => {
   };
 
   return (
-    <div className="h-auto w-full  pt-14 px-28">
+    <div className="h-auto w-full  pt-14 lg:px-28 max-lg:px-4">
       <title>Cart</title>
       <div className="flex flex-col items-center w-full gap-4">
         <h1 className="text-2xl pb-12">Shopping Cart</h1>
-        <div className="flex flex-row w-1/2 justify-between font-semibold text-sm pb-2 border-b-2">
-          <p className="w-3/6 text-left">Product</p>
-          <p className="w-1/6 text-center">Price</p>
-          <p className="w-1/6 text-center">Quantity</p>
-          <p className="w-1/6 text-right">Total</p>
-        </div>
-        <div className="flex flex-col w-1/2 gap-6 mt-4">
+        <div className="flex flex-col w-full lg:w-1/2 gap-6 mt-4">
           {cartItems.map((item, index) => (
             <div
               className="flex flex-row w-full justify-between text-sm text-black"
               key={index}
             >
-              <div className="w-3/6 flex flex-row items-start">
+              <div className="w-2/3 flex flex-row items-start">
                 <img
                   src={item.imageUrl}
                   alt={item.name}
                   className="h-20 w-20 object-cover"
                 />
-                <div className="flex flex-col gap-4">
-                  <p className="pl-4 font-bold text-xs">{item.name}</p>
-                  <p className="pl-4 text-xs">{item.size}</p>
+                <div className="flex pl-4 flex-col">
+                  <p className="font-bold text-xs">{item.name}</p>
+                  <p className=" text-xs">size: {item.size}</p>
+                  <p className="pt-4">Price: ${Number(item.price)}</p>
                 </div>
               </div>
-              <p className="w-1/6 text-center">$ {Number(item.price)}</p>
-              <div className="flex flex-col gap-2 w-1/6 px-2 text-center text-gray-600">
+
+              <div className="flex flex-col gap-2 w-1/2 lg:w-1/5 px-2 text-center">
                 <div className="flex flex-row p-3 border border-gray-600 justify-between items-center">
                   <FiMinus
                     className="cursor-pointer"
@@ -120,13 +115,13 @@ const Page = () => {
                   <p className="text-xs text-red-500">{errorText}</p>
                 ) : null}
                 <p
-                  className="text-xs text-red-500 underline hover:cursor-pointer"
+                  className="text-xs text-red-500 underline hover:cursor-pointer text-right max-sm:hidden"
                   onClick={() => handleDeleteFromCart(item.id)}
                 >
                   Remove
                 </p>
+                <p className="text-right">Total: ${calculateItemTotal(item)}</p>
               </div>
-              <p className="w-1/6 text-right">$ {calculateItemTotal(item)}</p>
             </div>
           ))}
         </div>
@@ -135,11 +130,11 @@ const Page = () => {
             Continue Shopping
           </a>
         </p>
-        <div className="flex flex-row w-1/2 justify-between py-4 border-y border-black">
+        <div className="flex flex-row w-full lg:w-1/2 justify-between py-4 border-y border-black">
           <p className=" font-semibold">Subtotal</p>
           <p className=" font-semibold">$ {calculateSubtotal()}</p>
         </div>
-        <div className="flex flex-col w-1/2 items-center justify-center">
+        <div className="flex flex-col max-lg:w-5/6 min-w-[400px] lg:w-1/2 items-center justify-center">
           <p className="text-xs text-gray-600">
             ADD A NOTE TO YOUR ORDER (optional)
           </p>

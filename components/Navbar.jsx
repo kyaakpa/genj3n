@@ -43,8 +43,8 @@ const Navbar = () => {
       href: "/shop",
     },
     {
-      name: "CONTACT",
-      href: "/contact",
+      name: "COMMISSION",
+      href: "/art-commission",
     },
     {
       name: (

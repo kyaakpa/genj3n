@@ -12,24 +12,30 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(request) {
   try {
-    const {
-      email,
-      orderId,
-      customerName,
-      total,
-      items,
-      note
-    } = await request.json();
+    const { email, orderId, customerName, total, items, note } =
+      await request.json();
 
     // Create items HTML
-    const itemsHtml = items.map(item => `
+    const itemsHtml = items
+      .map(
+        (item) => `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.ordered_quantity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">$${item.price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">$${(item.price * item.ordered_quantity).toFixed(2)}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${
+          item.name
+        }</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${
+          item.ordered_quantity
+        }</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">$${
+          item.price
+        }</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">$${(
+          item.price * item.ordered_quantity
+        ).toFixed(2)}</td>
       </tr>
-    `).join('');
+    `
+      )
+      .join("");
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -64,25 +70,31 @@ export async function POST(request) {
             <strong>Total: $${total.toFixed(2)}</strong>
           </div>
 
-          ${note ? `
+          ${
+            note
+              ? `
             <div style="margin-top: 20px; padding: 10px; background-color: #f8f8f8;">
               <strong>Order Note:</strong><br>
               ${note}
             </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <p style="margin-top: 20px;">
             If you have any questions about your order, please don't hesitate to contact us.
           </p>
 
-          <p>Best regards,<br>Genjen Lama</p>
+          <p>Best regards,<br>Genjen</p>
         </div>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    return NextResponse.json({ message: "Order confirmation sent successfully" });
+    return NextResponse.json({
+      message: "Order confirmation sent successfully",
+    });
   } catch (error) {
     console.error("Error sending order confirmation:", error);
     return NextResponse.json(
