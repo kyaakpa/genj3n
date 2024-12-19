@@ -3,17 +3,24 @@
 import { db } from "@/app/firebase/config";
 import { collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-
 import { useRouter } from "next/navigation";
 import BillPopup from "./invoiceActions";
 
 const OrderList = () => {
-  const [orders, setOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState([]); // Store all orders
+  const [displayedOrders, setDisplayedOrders] = useState([]); // Store paginated orders
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dateRange, setDateRange] = useState({
+    startDate: '',
+    endDate: ''
+  });
+  const itemsPerPage = 9;
   const router = useRouter();
 
   const getOrders = async () => {
@@ -25,12 +32,84 @@ const OrderList = () => {
         docId: doc.id,
         ...doc.data(),
       }));
-      setOrders(data);
+
+      // Sort orders by date
+      const sortedData = data.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setAllOrders(sortedData);
+      updateDisplayedOrders(sortedData, dateRange, currentPage, searchTerm);
     } catch (err) {
       setError("Failed to fetch orders. Please try again later.");
       console.error("Error fetching orders:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateDisplayedOrders = (orders, dateRange, page, search) => {
+    // First apply search if there is any
+    let filtered = orders;
+    if (search) {
+      filtered = orders.filter((order) => {
+        if (!order) return false;
+        const customerName = `${order.customerInfo?.firstName ?? ""} ${
+          order.customerInfo?.lastName ?? ""
+        }`.toLowerCase();
+        const searchValue = search.toLowerCase();
+        return (
+          customerName.includes(searchValue) ||
+          order.docId?.toString().toLowerCase().includes(searchValue)
+        );
+      });
+    }
+
+    // Then apply date filter
+    filtered = filtered.filter(order => {
+      if (!dateRange.startDate && !dateRange.endDate) return true;
+      
+      const orderDate = new Date(order.createdAt);
+      const start = dateRange.startDate ? new Date(dateRange.startDate) : null;
+      const end = dateRange.endDate ? new Date(dateRange.endDate) : null;
+      
+      if (start && end) {
+        return orderDate >= start && orderDate <= end;
+      } else if (start) {
+        return orderDate >= start;
+      } else if (end) {
+        return orderDate <= end;
+      }
+      return true;
+    });
+
+    // Calculate total pages based on filtered results
+    const totalFilteredOrders = filtered.length;
+    setTotalPages(Math.ceil(totalFilteredOrders / itemsPerPage));
+
+    // Apply pagination
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setDisplayedOrders(filtered.slice(startIndex, endIndex));
+  };
+
+  useEffect(() => {
+    getOrders();
+  }, []);
+
+  useEffect(() => {
+    updateDisplayedOrders(allOrders, dateRange, currentPage, searchTerm);
+  }, [dateRange, currentPage, searchTerm]);
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -46,9 +125,12 @@ const OrderList = () => {
         setDeletingOrderId(orderId);
         const orderRef = doc(db, "orders", orderId);
         await deleteDoc(orderRef);
-        setOrders((prevOrders) =>
-          prevOrders.filter((order) => order.docId !== orderId)
-        );
+        
+        // Update both all orders and displayed orders
+        const updatedAllOrders = allOrders.filter(order => order.docId !== orderId);
+        setAllOrders(updatedAllOrders);
+        updateDisplayedOrders(updatedAllOrders, dateRange, currentPage, searchTerm);
+        
         alert("Order deleted successfully");
       } catch (error) {
         console.error("Error removing document:", error);
@@ -59,42 +141,34 @@ const OrderList = () => {
     }
   };
 
-  useEffect(() => {
-    getOrders();
-  }, []);
+  const handleDateRangeChange = (e) => {
+    const { name, value } = e.target;
+    setDateRange(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setCurrentPage(1); // Reset to first page when changing date range
+  };
 
-  const filteredOrders = orders.filter((order) => {
-    if (!order) return false;
+  const handleAllTime = () => {
+    setDateRange({
+      startDate: '',
+      endDate: ''
+    });
+    setCurrentPage(1);
+  };
 
-    const customerName = `${order.customerInfo?.firstName ?? ""} ${
-      order.customerInfo?.lastName ?? ""
-    }`.toLowerCase();
 
-    const searchValue = searchTerm.toLowerCase();
-
-    return (
-      customerName.includes(searchValue) ||
-      order.docId?.toString().toLowerCase().includes(searchValue)
-    );
-  });
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   const getStatusStyle = (status) => {
     return status === "Pending"
       ? { textColor: "text-[#B79153]", bgColor: "bg-[#FFECD0]" }
       : { textColor: "text-[#459D4F]", bgColor: "bg-[#D9FFDD]" };
   };
-
-  if (loading) {
-    return (
-      <div className="h-auto w-full pt-6 px-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-10 bg-gray-200 rounded w-full mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded w-full"></div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -111,17 +185,45 @@ const OrderList = () => {
       <div className="flex flex-col items-start w-full">
         <div className="flex flex-col w-full px-8 pb-12 gap-4">
           <h1 className="text-2xl font-semibold">Orders</h1>
-          <div className="flex flex-row items-center w-full justify-between">
+          
+          <div className="flex flex-col md:flex-row items-center w-full justify-between gap-4">
             <input
-              className="w-1/3 h-10 pl-2 border-2 border-gray-300 rounded-md"
+              className="w-full md:w-1/3 h-10 pl-2 border-2 border-gray-300 rounded-md"
               type="text"
               placeholder="Search by customer name or order ID"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
+            
+            <div className="flex flex-row gap-4 items-center">
+              <input
+                type="date"
+                name="startDate"
+                value={dateRange.startDate}
+                onChange={handleDateRangeChange}
+                className="h-10 pl-2 border-2 border-gray-300 rounded-md"
+              />
+              <input
+                type="date"
+                name="endDate"
+                value={dateRange.endDate}
+                onChange={handleDateRangeChange}
+                className="h-10 pl-2 border-2 border-gray-300 rounded-md"
+              />
+              <button
+                onClick={handleAllTime}
+                className="h-10 px-4 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+              >
+                All Time
+              </button>
+            </div>
           </div>
 
-          {filteredOrders.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <span className="text-gray-500">Loading...</span>
+            </div>
+          ) : displayedOrders.length === 0 ? (
             <div className="w-full text-center py-8 text-gray-500">
               No orders found matching your search criteria.
             </div>
@@ -131,16 +233,15 @@ const OrderList = () => {
                 <thead>
                   <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                     <th className="py-2 px-4 border text-left">Order ID</th>
-                    <th className="py-2 px-4 border text-left">
-                      Customer Name
-                    </th>
+                    <th className="py-2 px-4 border text-left">Customer Name</th>
                     <th className="py-2 px-4 border text-left">Status</th>
                     <th className="py-2 px-4 border text-left">Total Price</th>
+                    <th className="py-2 px-4 border text-left">Date</th>
                     <th className="py-2 px-4 border text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order) => {
+                  {displayedOrders.map((order) => {
                     if (!order || !order.docId) return null;
 
                     const { textColor, bgColor } = getStatusStyle(order.status);
@@ -150,23 +251,22 @@ const OrderList = () => {
                         className="hover:bg-gray-100 font-semibold"
                       >
                         <td className="py-4 px-4 text-blue-500">
-                          <a href={`/admin/orders/${order.docId}`}>
-                            #{order.id}
-                          </a>
+                          <a href={`/admin/orders/${order.docId}`}>#{order.id}</a>
                         </td>
                         <td className="py-4 px-4">
                           {order.customerInfo?.firstName ?? "N/A"}{" "}
                           {order.customerInfo?.lastName ?? ""}
                         </td>
                         <td className="py-4 px-4">
-                          <span
-                            className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}
-                          >
+                          <span className={`${textColor} ${bgColor} py-2 px-4 rounded-full`}>
                             {order.status}
                           </span>
                         </td>
                         <td className="py-4 px-4">
                           ${order.totalPrice?.toFixed(2) ?? "0.00"}
+                        </td>
+                        <td className="py-4 px-4">
+                          {new Date(order.createdAt).toLocaleDateString()}
                         </td>
                         <td className="py-4 px-4 space-x-2">
                           <button
@@ -195,12 +295,36 @@ const OrderList = () => {
         </div>
       </div>
 
-      {/* Bill Popup */}
       {selectedOrder && (
         <BillPopup
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
         />
+      )}
+
+      {displayedOrders.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-center w-full my-4 sm:my-6 px-2 sm:px-4 gap-4">
+          <div className="order-2 sm:order-1 text-xs sm:text-sm text-gray-600 text-center sm:text-left">
+            Showing page {currentPage} of {totalPages}
+          </div>
+
+          <div className="flex items-center order-1 sm:order-2 w-full sm:w-auto justify-center gap-2 sm:gap-4">
+            <button
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1 || loading}
+            >
+              Previous
+            </button>
+            <button
+              className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages || loading}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

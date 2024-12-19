@@ -92,14 +92,14 @@ const Page = () => {
 
             <div className="flex items-center order-1 sm:order-2 w-full sm:w-auto justify-center gap-2 sm:gap-4">
               <button
-                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
                 onClick={handlePrevPage}
                 disabled={currentPage === 1 || isLoading}
               >
                 Previous
               </button>
               <button
-                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-black text-white text-xs sm:text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:bg-gray-800"
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages || isLoading}
               >
