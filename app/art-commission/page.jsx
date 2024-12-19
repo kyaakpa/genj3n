@@ -240,6 +240,7 @@ const CommissionPage = () => {
 
   return (
     <div className="min-h-screen ">
+      <title>Art Commission Request</title>
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto bg-white  p-6 md:p-8">
           <h1 className="text-3xl font-semibold text-center mb-2">
@@ -303,11 +304,7 @@ const CommissionPage = () => {
                   name="commissionType"
                   value={formData.commissionType}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-none border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{
-                    WebkitAppearance: "none",
-                    MozAppearance: "none",
-                  }}
+                  className="w-full px-4 py-[10px] bg-white border border-gray-300 rounded-none  focus:ring-2  focus:border-transparent"
                   required
                 >
                   <option value="" className="rounded-none">
