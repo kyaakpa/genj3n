@@ -24,10 +24,21 @@ const Page = () => {
   });
   const [productImage, setProductImage] = useState(null);
 
+  const getImageDimensions = (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve(`${img.width}x${img.height}px`);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleDeleteImage = () => {
     setProductImage(null);
-    setProductInfo({ ...productInfo, imageUrl: "" });
+    setProductInfo({ ...productInfo, imageUrl: "", size: "" });
   };
+
   const handleDrop = (event) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
@@ -49,16 +60,19 @@ const Page = () => {
     uploadImageToFirebase(file);
   };
 
-  const uploadImageToFirebase = (file) => {
+  const uploadImageToFirebase = async (file) => {
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       setProductImage(event.target.result);
-      setProductInfo({ ...productInfo, imageUrl: event.target.result });
+
+      // Get image dimensions before uploading
+      const dimensions = await getImageDimensions(file);
+      setProductInfo((prev) => ({ ...prev, size: dimensions }));
 
       const img = ref(imgDB, `images/${v4()}`);
       uploadBytes(img, file).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((url) => {
-          setProductInfo({ ...productInfo, imageUrl: url });
+          setProductInfo((prev) => ({ ...prev, imageUrl: url }));
         });
       });
     };
@@ -148,6 +162,7 @@ const Page = () => {
                 className="border border-gray-400 py-2 px-4 active:outline-none focus:outline-none w-full"
                 value={productInfo.size}
                 onChange={handleInputChange}
+                readOnly
               />
             </div>
             <div className="flex flex-row items-start gap-4">

@@ -17,22 +17,33 @@ const Page = () => {
   const router = useRouter();
   const [productInfo, setProductInfo] = useState({
     name: "",
-    price: "",
-    totalQuantity: "",
     size: "",
-    description: "",
     imageUrl: "",
   });
   const [productImage, setProductImage] = useState(null);
 
+  const getImageDimensions = (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve(`${img.width}x${img.height}px`);
+        URL.revokeObjectURL(img.src); // Clean up
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleDeleteImage = () => {
     setProductImage(null);
-    setProductInfo({ ...productInfo, imageUrl: "" });
+    setProductInfo((prev) => ({ ...prev, imageUrl: "", size: "" }));
   };
+
   const handleDrop = (event) => {
     event.preventDefault();
     const file = event.dataTransfer.files[0];
-    uploadImageToFirebase(file);
+    if (file && file.type.startsWith("image/")) {
+      uploadImageToFirebase(file);
+    }
   };
 
   const handleDragOver = (event) => {
@@ -41,29 +52,43 @@ const Page = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProductInfo({ ...productInfo, [name]: value });
+    setProductInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (event) => {
     event.preventDefault();
     const file = event.target.files[0];
-    uploadImageToFirebase(file);
+    if (file && file.type.startsWith("image/")) {
+      uploadImageToFirebase(file);
+    }
   };
 
-  const uploadImageToFirebase = (file) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setProductImage(event.target.result);
-      setProductInfo({ ...productInfo, imageUrl: event.target.result });
+  const uploadImageToFirebase = async (file) => {
+    try {
+      // First get dimensions
+      const dimensions = await getImageDimensions(file);
 
+      // Create a temporary URL for preview
+      const previewUrl = URL.createObjectURL(file);
+      setProductImage(previewUrl);
+
+      // Update size immediately
+      setProductInfo((prev) => ({ ...prev, size: dimensions }));
+
+      // Upload to Firebase
       const img = ref(imgDB, `images/${v4()}`);
-      uploadBytes(img, file).then((snapshot) => {
-        getDownloadURL(snapshot.ref).then((url) => {
-          setProductInfo({ ...productInfo, imageUrl: url });
-        });
-      });
-    };
-    reader.readAsDataURL(file);
+      const snapshot = await uploadBytes(img, file);
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+
+      // Update final URL
+      setProductInfo((prev) => ({ ...prev, imageUrl: downloadUrl }));
+
+      // Clean up temporary URL
+      URL.revokeObjectURL(previewUrl);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+    }
   };
 
   const handleSave = async () => {
@@ -71,10 +96,7 @@ const Page = () => {
       await addDoc(collection(db, "gallery"), productInfo);
       setProductInfo({
         name: "",
-        price: "",
-        totalQuantity: "",
         size: "",
-        description: "",
         imageUrl: "",
       });
       setProductImage(null);
@@ -84,6 +106,7 @@ const Page = () => {
       router.push("/admin/gallery");
     } catch (e) {
       console.error("Error adding document: ", e);
+      toast.error("Failed to save painting");
     }
   };
 
@@ -93,13 +116,13 @@ const Page = () => {
         <div className="flex flex-row items-start justify-between w-full gap-4 border-b-2 border-gray-200 pb-4 mt-8">
           <div className="flex flex-row gap-8">
             <button
-              className="flex items-center text-blue-500 "
+              className="flex items-center text-blue-500"
               onClick={() => router.push("/admin/gallery")}
             >
               <IoIosArrowRoundBack size={28} className="mr-2" />
               BACK
             </button>
-            <h1 className="text-4xl  text-black">Add Painting</h1>
+            <h1 className="text-4xl text-black">Add Painting</h1>
           </div>
         </div>
 
@@ -125,6 +148,7 @@ const Page = () => {
                 className="border border-gray-400 py-2 px-4 active:outline-none focus:outline-none w-full"
                 value={productInfo.size}
                 onChange={handleInputChange}
+                readOnly
               />
             </div>
           </div>
@@ -169,12 +193,16 @@ const Page = () => {
               type="file"
               id="fileInput"
               className="hidden"
+              accept="image/*"
               onChange={handleFileChange}
             />
           </div>
         </div>
         <div className="flex flex-row items-start gap-4 mt-8 ">
-          <button className="bg-red-500 text-white p-2 w-40 active:outline-none text-sm">
+          <button
+            className="bg-red-500 text-white p-2 w-40 active:outline-none text-sm"
+            onClick={() => router.push("/admin/gallery")}
+          >
             Cancel
           </button>
           <button
