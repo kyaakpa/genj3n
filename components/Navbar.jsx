@@ -10,22 +10,31 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0); // Add this to track scroll position
 
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => {
-      const isTop = window.scrollY === 0;
+      const currentScrollY = window.scrollY;
+      const isTop = currentScrollY === 0;
+
+      // Close hamburger menu if user has scrolled more than 16px
+      if (Math.abs(currentScrollY - lastScrollY) > 16) {
+        setOpen(false);
+      }
+
       setScrolled(!isTop);
+      setLastScrollY(currentScrollY);
     };
 
     // Check initial scroll position
     handleScroll();
-
     window.addEventListener("scroll", handleScroll);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [lastScrollY]); // Add lastScrollY to dependencies
 
   const uniqueItemsCount = cartItems?.length || 0;
 
@@ -38,27 +47,27 @@ const Navbar = () => {
       name: "GALLERY",
       href: "/gallery",
     },
-    {
-      name: "SHOP",
-      href: "/shop",
-    },
+    // {
+    //   name: "SHOP",
+    //   href: "/shop",
+    // },
     {
       name: "COMMISSION",
       href: "/art-commission",
     },
-    {
-      name: (
-        <div className="relative">
-          <PiShoppingCartSimple size={22} />
-          {mounted && uniqueItemsCount > 0 && (
-            <span className="absolute -top-4 -right-4 bg-[#c5a365] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {uniqueItemsCount}
-            </span>
-          )}
-        </div>
-      ),
-      href: "/cart",
-    },
+    // {
+    //   name: (
+    //     <div className="relative">
+    //       <PiShoppingCartSimple size={22} />
+    //       {mounted && uniqueItemsCount > 0 && (
+    //         <span className="absolute -top-4 -right-4 bg-[#c5a365] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+    //           {uniqueItemsCount}
+    //         </span>
+    //       )}
+    //     </div>
+    //   ),
+    //   href: "/cart",
+    // },
   ];
 
   return (
@@ -68,12 +77,11 @@ const Navbar = () => {
       } z-40 transition-all duration-300 ease-in-out`}
     >
       <div
-        className={`w-full lg:px-28 px-12 ${
+        className={`w-full lg:px-28 px-12 max-[600px]:px-2 ${
           mounted && scrolled ? "py-6" : "py-12"
         } transition-all duration-300 ease-in-out`}
       >
         <div className="flex flex-row justify-between items-center">
-          {/* Use next/image for better performance */}
           <img
             src="./logo1.png"
             alt="genj3n logo"
